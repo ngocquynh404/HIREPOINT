@@ -1,12 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import '../../../styles/applicantnavbar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faBuilding, faBriefcase, faBell, faCogs, faSignOutAlt, faQuestionCircle, faComments } from '@fortawesome/free-solid-svg-icons';
 import { logout } from "../../../libs/isAuth";
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
 
 export default function UserProfileMenu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [user, setUser] = useState(null); // Lưu trữ dữ liệu người dùng
+    const [error, setError] = useState(null); // Lưu trữ lỗi (nếu có)
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+          try {
+            const token = localStorage.getItem('token'); // Lấy token từ localStorage
+    
+            // Kiểm tra nếu không có token
+            if (!token) {
+              setError('Token is missing, please login again.');
+              setLoading(false);
+              return;
+            }
+    
+            const response = await axios.get('http://localhost:5000/api/users/me', {
+              headers: {
+                Authorization: `Bearer ${token}`, // Gửi token trong header
+              },
+            });
+    
+            setUser(response.data); // Lưu dữ liệu người dùng
+            setLoading(false);
+          } catch (err) {
+            console.error('Error fetching user data:', err);
+            setError('Failed to fetch user data.');
+            setLoading(false);
+          }
+        };
+    
+        fetchUserProfile(); 
+      }, []);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -39,8 +74,8 @@ export default function UserProfileMenu() {
                 <div className="applicant-menu">
                     <div className="applicant-info">
                         <div className='applicant-info-detail'>
-                            <h4 className="applicant-name">Ma Thị Ngọc Quỳnh</h4>
-                            <p className="applicant-email">ngocquynh141@gmail.com</p>
+                            <h4 className="applicant-name">{user.username}</h4>
+                            <p className="applicant-email">{user.email}</p>
                         </div>
                         <button className="applicant-update-button">Cập nhật hồ sơ</button>
                     </div>
