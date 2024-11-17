@@ -118,23 +118,28 @@ function JobDetail() {
             { job_id: jobId },
             { headers: { Authorization: `Bearer ${token}` } }
           );
-    
+            
           // Kiểm tra nếu lưu thành công
           if (response.status === 201) {
-            alert('Đã nộp đơn ứng tuyển thành công!');
+            alert('Lưu tin ứng tuyển thành công!');
             setTimeout(() => setSuccessMessage(null), 3000); // Ẩn thông báo thành công sau 3 giây
     
             // Cập nhật danh sách công việc đã lưu
             setSavedJobs((prevSavedJobs) => [...prevSavedJobs, response.data.savedJob]);
           }
-          if (response.status === 409) {
-            // Hiển thị thông báo lỗi từ backend
-            alert('Bạn đã lưu công việc này trước đó')
-          }
+         
         } catch (err) {
-          // Xử lý lỗi khi không thể lưu công việc
-          console.error('Error saving job:', err.response ? err.response.data : err.message);
-          setError('Không thể lưu công việc. Vui lòng thử lại.');
+            if (err.response) {
+                // Xử lý các mã trạng thái cụ thể
+                if (err.response.status === 409) {
+                  alert('Bạn đã lưu công việc này trước đó.');
+                } else {
+                  setError(err.response.data.message || 'Không thể lưu công việc. Vui lòng thử lại.');
+                }
+              } else {
+                console.error('Error saving job:', err.message);
+                setError('Có lỗi xảy ra. Vui lòng thử lại.');
+              }
         }
       };
       const handleApply = async (jobId) => {
@@ -261,8 +266,8 @@ function JobDetail() {
                             </section>
 
                             <div className="job-detail-actions">
-                                <button className="job-detail-button">Ứng tuyển ngay</button>
-                                <button className="job-detail-button">Lưu tin</button>
+                                <button onClick={() => handleApply(job._id)} className="job-detail-button">Ứng tuyển ngay</button>
+                                <button onClick={() => handleApply(job._id)} className="job-detail-button">Lưu tin</button>
                             </div>
 
                             <p className="job-detail-deadline">Hạn nộp hồ sơ: application_deadline</p>
@@ -375,7 +380,7 @@ function JobDetail() {
                                         jobs.map((job, index) => (
                                             <div key={job._id} className='company-jobs-item-card'>
                                                 <div className='company-jobs-logo'>
-                                                    <img src={job.logo} alt='Company Logo' />
+                                                    <img src={job.company_id.logo} alt='Company Logo' />
                                                 </div>
                                                 <div className='company-jobs-info-section'>
                                                     <h2 className='company-jobs-position-title'>{job.title}</h2>

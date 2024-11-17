@@ -1,74 +1,44 @@
-import React, { useState } from 'react';
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Link ,useParams} from "react-router-dom";
 import '../../../styles/topcompany.css';
+import axios from 'axios';
 
-const companyData = [
-    {
-        id: 1,
-        banner: 'https://via.placeholder.com/600x200',
-        logo: 'https://via.placeholder.com/80',
-        name: 'Jabil Vietnam Ltd',
-        followers: '749 lượt theo dõi',
-        jobs: [
-            { title: 'Senior EHS Engineer', salary: 'Thương Lượng', location: 'Hồ Chí Minh' },
-            { title: 'Supply Chain Project Manager', salary: 'Thương Lượng', location: 'Hồ Chí Minh' }
-        ]
-    },
-    {
-        id: 2,
-        banner: 'https://via.placeholder.com/600x200',
-        logo: 'https://via.placeholder.com/80',
-        name: 'Kintetsu World Express',
-        followers: '163 lượt theo dõi',
-        jobs: [
-            { title: 'Operation Intern', salary: 'Thương Lượng', location: 'Hồ Chí Minh, Hà Nội' },
-            { title: 'Customer Service Supervisor', salary: 'Thương Lượng', location: 'Hà Nội' }
-        ]
-    },
-    {
-        id: 3,
-        banner: 'https://via.placeholder.com/600x200',
-        logo: 'https://via.placeholder.com/80',
-        name: 'Home Credit Vietnam',
-        followers: '455 lượt theo dõi',
-        jobs: [
-            { title: 'Process Analyst', salary: 'Thương Lượng', location: 'Hồ Chí Minh' },
-            { title: 'Senior Business Legal Specialist', salary: 'Thương Lượng', location: 'Hồ Chí Minh' }
-        ]
-    },
-];
-
-// Tạo thêm dữ liệu mẫu
-for (let i = 4; i <= 50; i++) {
-    companyData.push({
-        id: i,
-        banner: 'https://via.placeholder.com/600x200',
-        logo: 'https://via.placeholder.com/80',
-        name: `Company ${i}`,
-        followers: `${Math.floor(Math.random() * 1000) + 100} lượt theo dõi`,
-        jobs: [
-            {
-                title: `Job Position ${i}-1`,
-                salary: 'Thương Lượng',
-                location: ['Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng'][Math.floor(Math.random() * 3)]
-            },
-            {
-                title: `Job Position ${i}-2`,
-                salary: 'Thương Lượng',
-                location: ['Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng'][Math.floor(Math.random() * 3)]
-            }
-        ]
-    });
-}
 
 export default function TopCompany() {
-    // State để quản lý số lượng công ty hiển thị
+    const { companyId } = useParams();
     const [visibleCompanies, setVisibleCompanies] = useState(15);
+    const [companies, setCompanies] = useState([]); // Danh sách công ty
+    const [jobs, setJobs] = useState([]);
+    const [followedCompanies, setFollowedCompanies] = useState([]); // Danh sách công ty đã theo dõi
+    const [error, setError] = useState(null);  // State cho thông báo lỗi
+    const [successMessage, setSuccessMessage] = useState(null);  // State cho thông báo thành công
 
     // Hàm để tăng số lượng công ty hiển thị
     const handleLoadMore = () => {
         setVisibleCompanies(prev => prev + 9);
     };
+
+    useEffect(() => {
+        // Lấy tất cả các công ty
+        const fetchAllCompanies = async () => {
+            const token = localStorage.getItem('token'); // Lấy token từ localStorage
+            if (!token) {
+                setError('Bạn cần đăng nhập để xem danh sách công ty.');
+                return;
+            }
+
+            try {
+                const response = await axios.get('http://localhost:5000/api/companies', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setCompanies(response.data);
+            } catch (error) {
+                console.error('Error fetching all companies:', error);
+                setError('Không thể tải danh sách công ty.');
+            }
+        };
+        fetchAllCompanies();
+    }, []);
 
     return (
         <div className='unique-company'>
@@ -91,37 +61,32 @@ export default function TopCompany() {
                 </div>
             </div>
             <div className='unique-company-container'>
-                <h2 className='unique-company-title'>Công ty nổi bật ({companyData.length})</h2>
+                <h2 className='unique-company-title'>Công ty nổi bật ({companies.length})</h2>
                 <div className='unique-company-grid'>
-                    {companyData.slice(0, visibleCompanies).map(company => (
-                        <div key={company.id} className='unique-company-card'>
-                            <img src={company.banner} alt='Company Banner' className='unique-company-banner' />
-                            <div className='unique-company-info'>
-                                <img src={company.logo} alt='Company Logo' className='unique-company-logo' />
-                                <div className='unique-company-details'>
-                                    <Link to={`/companies/companydetail/${company.id}`} className="unique-company-name">
-                                        <h3 className='unique-company-name'>{company.name}</h3>
-                                    </Link>
-                                    <p className='unique-company-followers'>{company.followers}</p>
-                                    <button className='unique-company-follow-button'>+ Theo dõi</button>
-                                </div>
-                            </div>
-                            <div className='unique-company-job-list'>
-                                {company.jobs.map((job, index) => (
-                                    <div key={index} className='unique-company-job-item'>
-                                        <p className='unique-company-job-title'>{job.title}</p>
-                                        <p className='unique-company-job-details'>
-                                            {job.salary} | {job.location}
-                                        </p>
+                    {companies.length > 0 ? (
+                        companies.map((company) => (
+                            <div key={company._id} className='unique-company-card'>
+                                <img src={company.banner} alt='Company Banner' className='unique-company-banner' />
+                                <div className='unique-company-info'>
+                                    <img src={company.logo} alt='Company Logo' className='unique-company-logo' />
+                                    <div className='unique-company-details'>
+                                        <Link to={`/companies/companydetail/${company._id}`} className="unique-company-name">
+                                            <h3 className='unique-company-name'>{company.name}</h3>
+                                        </Link>
+                                        <p className='unique-company-followers'>{company.industry}</p>
+                                        <button className='unique-company-follow-button'>+ Theo dõi</button>
                                     </div>
-                                ))}
+                                </div>
+
+                                <button className='unique-company-view-button'>Xem công ty</button>
                             </div>
-                            <button className='unique-company-view-button'>Xem công ty</button>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <p>Không có công ty nào.</p>
+                    )}
                 </div>
                 {/* Nút Xem thêm */}
-                {visibleCompanies < companyData.length && (
+                {visibleCompanies < companies.length && (
                     <div className='unique-company-load-more'>
                         <button onClick={handleLoadMore} className='unique-company-load-more-button'>
                             Xem thêm

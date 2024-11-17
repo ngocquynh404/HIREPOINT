@@ -75,7 +75,21 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error });
   }
 });
+//lay danh sach cong viẹc của 1 cong ty 
+router.get('/jobs-by-company/:companyId', async (req, res) => {
+  try {
+    const { companyId } = req.params; // Lấy companyId từ params
 
+    // Tìm tất cả các công việc có company_id khớp với companyId
+    const jobs = await Job.find({ company_id: companyId });
+
+    // Trả về danh sách công việc
+    res.status(200).json(jobs);
+  } catch (error) {
+    console.error('Error fetching jobs by company:', error);
+    res.status(500).json({ message: 'Lỗi khi lấy danh sách công việc.' });
+  }
+});
 // UPDATE - Cập nhật công việc
 router.put('/:id', async (req, res) => {
   try {
