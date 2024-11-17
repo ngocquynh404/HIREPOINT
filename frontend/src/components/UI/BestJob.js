@@ -143,7 +143,7 @@ export default function BestJob() {
                                 <img src={job.company_id? job.company_id.logo:'N/A'} alt="Company Logo" />
                             </div>
                             <div className="job-info-section">
-                                <Link to={`/jobs/jobdetail/${job.id}`} className="position-title">
+                                <Link to={`/jobs/jobdetail/${job._id}`} className="position-title">
                                     <h2 className="position-title">{job.title}</h2>
                                 </Link>
                                 <p className="company-name">{job.company_id?job.company_id.name:'N/A'}</p>
