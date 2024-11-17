@@ -230,7 +230,7 @@ function JobDetail() {
                                                     <span className='related-salary-job-info'>{job.salary}</span>
                                                     <div className='related-job-info-details'>
                                                         <span className='related-location-job-info'>📍 {job.location}</span>
-                                                        <span className='related-remaining-days'>⏳ Còn {job.job_type} ngày để ứng tuyển</span>
+                                                        <span className='related-remaining-days'>⏳ Còn {Math.floor((new Date(job.application_deadline) - new Date()) / (1000 * 3600 * 24))} ngày để ứng tuyển</span>
                                                     </div>
                                                     <p className='related-job-update'>Cập nhật {job.updated_at} trước</p>
                                                 </div>
