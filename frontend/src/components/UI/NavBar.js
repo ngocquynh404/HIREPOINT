@@ -24,37 +24,52 @@ export default function Navbar() {
 
         {isAuth() ? (
           <>
-            <div className="nav-links">
-              {linkUrl.pathname.startsWith("/blog-home") ? (
-                <>
-                  <Link className="nav-link" to="/">Home</Link>
-                  <Link className="nav-link" to="/">Messages</Link>
-                  <Link className="nav-link" to="/">Notifications</Link>
-                </>
-              ) : (
-                <>
-                  <Link className="nav-link" to="/howitworks">How it works</Link>
-                  <Jobs className="nav-link">Jobs</Jobs>
-                  <Link className="nav-link" to="/companies">Companies</Link>
-                  <Link className="nav-link" to="/leaderboard">Leaderboard</Link>
-                  <Blog className="nav-link" to="/blog-home">Blog</Blog>
-                </>
-              )}
-            </div>
+            {/* Nếu đã đăng nhập thì xét loại user */}
+            {userType() === "applicant" && (
+              <>
+                <div className="nav-links">
+                  {linkUrl.pathname.startsWith("/blog-home") ? (
+                    <>
+                      <Link className="nav-link" to="/">Home</Link>
+                      <Link className="nav-link" to="/">Messages</Link>
+                      <Link className="nav-link" to="/">Notifications</Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link className="nav-link" to="/howitworks">How it works</Link>
+                      <Jobs className="nav-link">Jobs</Jobs>
+                      <Link className="nav-link" to="/companies">Companies</Link>
+                      <Link className="nav-link" to="/leaderboard">Leaderboard</Link>
+                      <Blog className="nav-link" to="/blog-home">Blog</Blog>
+                    </>
+                  )}
+                </div>
 
-            <Disclosure.Button className="hamburger-center">
-              <DropNavBarCenter></DropNavBarCenter>
-            </Disclosure.Button>
+                <Disclosure.Button className="hamburger-center">
+                  <DropNavBarCenter></DropNavBarCenter>
+                </Disclosure.Button>
 
-            {/* Mobile menu button (hamburger icon) */}
-            <Disclosure.Button className="hamburger">
-              <DropNavBar></DropNavBar>
-            </Disclosure.Button>
-            <ApplicantNavBar />
+                {/* Mobile menu button (hamburger icon) */}
+                <Disclosure.Button className="hamburger">
+                  <DropNavBar></DropNavBar>
+                </Disclosure.Button>
+                <ApplicantNavBar />
+              </>
+            )}
+            {userType() === "recruiter" && (
+              <>
+                <p>recruiter</p>
+              </>
+            )}            
+            {userType() === "admin" && (
+              <>
+                <p>admin</p>
+              </>
+            )}
           </>
         ) : (
           <>
-            {/* Desktop nav links */}
+            {/* Nếu chưa đăng nhập thì hiện navbar sau */}
             <div className="nav-links">
               {linkUrl.pathname.startsWith("/blog-home") ? (
                 <>

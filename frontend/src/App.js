@@ -15,6 +15,7 @@ import BlogHome from "./components/pages/blog/BlogHome";
 import RecruiterDashboard from "./components/pages/recruiter/RecruiterDashboard";
 import ApplicantDashboard from "./components/pages/applicant/ApplicantDashboard";
 import AdminDashboard from "./components/pages/admin/AdminDashboard";
+import JobSaved from "./components/pages/job/JobSaved";
 
 function Layout() {
   const location = useLocation();
@@ -29,6 +30,7 @@ function Layout() {
         <Route exact path="/jobs/bestjobs" element={<BestJobBoard />} />
         <Route exact path="/jobs/findjobs" element={<FindJobBoard />} />
         <Route exact path="/jobs/job-recommendation" element={<JobRecommendation />} />
+        <Route exact path="/jobs/job-saved" element={<JobSaved />} />
         <Route exact path="/jobs/jobdetail/:id" element={<JobDetail />} />
         <Route exact path="/companies" element={<TopCompany />} />
         <Route exact path="/companies/companydetail/:id" element={<CompanyDetail />} />

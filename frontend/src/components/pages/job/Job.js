@@ -2,12 +2,14 @@ import { Popover, Transition } from "@headlessui/react";
 import { Fragment, useState, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faCode, faNewspaper } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
-import '../../../styles/blog.css'; 
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { isAuth, userType } from "../../../libs/isAuth"; // Import các hàm kiểm tra
+import "../../../styles/blog.css";
 
 export default function Jobs() {
   const [isOpen, setIsOpen] = useState(false);
   const timeoutRef = useRef(null);
+  const navigate = useNavigate(); // Hook điều hướng
 
   const handleMouseEnter = () => {
     clearTimeout(timeoutRef.current);
@@ -17,7 +19,7 @@ export default function Jobs() {
   const handleMouseLeave = () => {
     timeoutRef.current = setTimeout(() => {
       setIsOpen(false);
-    }, 200); 
+    }, 200);
   };
 
   const handlePanelMouseEnter = () => {
@@ -28,7 +30,35 @@ export default function Jobs() {
   const handlePanelMouseLeave = () => {
     timeoutRef.current = setTimeout(() => {
       setIsOpen(false);
-    }, 200); 
+    }, 200);
+  };
+
+  // Hàm kiểm tra và điều hướng
+  const handleJobRecommendationClick = () => {
+    if (!isAuth()) {
+      // Nếu chưa đăng nhập
+      navigate("/sign-in");
+    } else if (userType() === "applicant") {
+      // Nếu là applicant
+      navigate("/jobs/job-recommendation");
+    } else {
+      // Nếu đã đăng nhập nhưng không phải applicant
+      navigate("/sign-in");
+    }
+  };
+
+  // Hàm kiểm tra và điều hướng
+  const handleJobSavedClick = () => {
+    if (!isAuth()) {
+      // Nếu chưa đăng nhập
+      navigate("/sign-in");
+    } else if (userType() === "applicant") {
+      // Nếu là applicant
+      navigate("/jobs/job-saved");
+    } else {
+      // Nếu đã đăng nhập nhưng không phải applicant
+      navigate("/sign-in");
+    }
   };
 
   return (
@@ -59,15 +89,12 @@ export default function Jobs() {
             leaveTo="opacity-0 translate-y-1"
           >
             <Popover.Panel
-              className={`popover-panel ${isOpen ? "show" : ""}`} 
+              className={`popover-panel ${isOpen ? "show" : ""}`}
               onMouseEnter={handlePanelMouseEnter}
               onMouseLeave={handlePanelMouseLeave}
             >
               <div className="popover-inner">
-                <Link
-                  to="/jobs/bestjobs"
-                  className="link"
-                >
+                <Link to="/jobs/bestjobs" className="link">
                   <div className="icon">
                     <FontAwesomeIcon icon={faNewspaper} />
                   </div>
@@ -75,10 +102,7 @@ export default function Jobs() {
                     <p className="text-md">Best Jobs</p>
                   </div>
                 </Link>
-                <Link
-                  to="/jobs/findjobs"
-                  className="link"
-                >
+                <Link to="/jobs/findjobs" className="link">
                   <div className="icon">
                     <FontAwesomeIcon icon={faCode} />
                   </div>
@@ -86,28 +110,23 @@ export default function Jobs() {
                     <p className="text-md">Find Jobs</p>
                   </div>
                 </Link>
-                <Link
-                  to="/jobs/job-recommendation"
-                  className="link"
-                >
+                {/* Sử dụng sự kiện onClick để kiểm tra */}
+                <div className="link" onClick={handleJobRecommendationClick}>
                   <div className="icon">
                     <FontAwesomeIcon icon={faCode} />
                   </div>
                   <div className="text">
                     <p className="text-md">Job Recommendation</p>
                   </div>
-                </Link>
-                <Link
-                  to=""
-                  className="link"
-                >
+                </div>
+                <div className="link" onClick={handleJobSavedClick}>
                   <div className="icon">
                     <FontAwesomeIcon icon={faCode} />
                   </div>
                   <div className="text">
                     <p className="text-md">Job Saved</p>
                   </div>
-                </Link>
+                </div>
               </div>
             </Popover.Panel>
           </Transition>
