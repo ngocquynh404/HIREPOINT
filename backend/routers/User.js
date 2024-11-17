@@ -70,7 +70,11 @@ router.post('/login', async (req, res) => {
 
     // Tạo token và trả về cho người dùng
     const token = jwt.sign({ userId: user._id }, 'secretkey', { expiresIn: '1h' });
-    res.json({ message: 'Đăng nhập thành công', token , userId: user._id});
+    res.json({ message: 'Đăng nhập thành công', 
+      token , 
+      userId: user._id,
+      role: user.role
+    });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error });
   }
