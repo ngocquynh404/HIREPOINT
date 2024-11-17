@@ -12,6 +12,8 @@ function JobDetail() {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [savedJobs, setSavedJobs] = useState([]);
 
     useEffect(() => {
         const fetchJobDetail = async () => {
@@ -99,6 +101,59 @@ function JobDetail() {
         setJobToApply(null); // Đóng form ứng tuyển
     };
 
+    const handleSave = async (jobId) => {
+        try {
+          // Lấy token từ localStorage
+          const token = localStorage.getItem('token');
+    
+          // Kiểm tra nếu không có token
+          if (!token) {
+            setError('Bạn chưa đăng nhập. Vui lòng đăng nhập lại.');
+            return;
+          }
+    
+          // Gửi yêu cầu POST để lưu công việc
+          const response = await axios.post(
+            'http://localhost:5000/api/savedjobs/save-job',
+            { job_id: jobId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+    
+          // Kiểm tra nếu lưu thành công
+          if (response.status === 201) {
+            alert('Đã nộp đơn ứng tuyển thành công!');
+            setTimeout(() => setSuccessMessage(null), 3000); // Ẩn thông báo thành công sau 3 giây
+    
+            // Cập nhật danh sách công việc đã lưu
+            setSavedJobs((prevSavedJobs) => [...prevSavedJobs, response.data.savedJob]);
+          }
+          if (response.status === 409) {
+            // Hiển thị thông báo lỗi từ backend
+            alert('Bạn đã lưu công việc này trước đó')
+          }
+        } catch (err) {
+          // Xử lý lỗi khi không thể lưu công việc
+          console.error('Error saving job:', err.response ? err.response.data : err.message);
+          setError('Không thể lưu công việc. Vui lòng thử lại.');
+        }
+      };
+      const handleApply = async (jobId) => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.post(
+            'http://localhost:5000/api/applications',
+            { job_id: jobId }, // Chỉ gửi job_id
+            { headers: { Authorization: `Bearer ${token}` } } // Authorization header với token
+          );
+    
+          if (response.status === 201) {
+            alert('Đã nộp đơn ứng tuyển thành công!');
+          }
+        } catch (err) {
+          console.error('Error applying for job:', err); // Log error details
+          setError('Không thể nộp đơn ứng tuyển. Vui lòng thử lại.');
+        }
+      };
     return (
         <div className='job-detail-body'>
             <div className='job-detail-search-bar'>
@@ -142,8 +197,8 @@ function JobDetail() {
                                     </div>
                                 </div>
                                 <div className="job-detail-buttons">
-                                    <button className="job-detail-apply-button" >Ứng tuyển ngay</button>
-                                    <button className="job-detail-save-button">Lưu tin</button>
+                                    <button onClick={() => handleApply(job._id)} className="job-detail-apply-button" >Ứng tuyển ngay</button>
+                                    <button onClick={() => handleSave(job._id)} className="job-detail-save-button">Lưu tin</button>
                                 </div>
                             </div>)}
 
