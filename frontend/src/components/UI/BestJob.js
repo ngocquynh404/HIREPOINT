@@ -1,256 +1,33 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import '../../styles/bestjob.css';
+import axios from 'axios';
 
 export default function BestJob() {
-    const jobData = [
-        {
-            logo: 'logo1.png',
-            title: 'Giáo Viên Văn Từ 1 Năm Kinh Nghi...',
-            company: 'Công ty TNHH Tư vấn giải pháp Giáo dục Minh Hoàng',
-            salary: 'Trên 10 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo2.png',
-            title: 'Chuyên Viên Đào Tạo Ngành F&B',
-            company: 'Công ty Cổ phần Tầm Nhìn Quốc Tế Aladdin',
-            salary: '15 - 20 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo3.png',
-            title: 'Trưởng Phòng QA Làm Việc Tại Hà Nội',
-            company: 'Công ty CP Xây dựng Kết cấu thép IPC',
-            salary: 'Tới 35 triệu',
-            location: 'Hà Nội & 2 nơi khác'
-        },
-        {
-            logo: 'logo4.png',
-            title: 'Nhân Viên Kinh Doanh Bất Động Sản',
-            company: 'Công ty Bất Động Sản ABC',
-            salary: '10 - 15 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo5.png',
-            title: 'Chuyên Viên Marketing Online',
-            company: 'Công ty TNHH Digital Marketing',
-            salary: '12 - 18 triệu',
-            location: 'Hồ Chí Minh'
-        },
-        {
-            logo: 'logo6.png',
-            title: 'Kỹ Sư Xây Dựng Dân Dụng',
-            company: 'Công ty Xây Dựng XYZ',
-            salary: '15 - 25 triệu',
-            location: 'Đà Nẵng'
-        },
-        {
-            logo: 'logo7.png',
-            title: 'Nhân Viên Hỗ Trợ Khách Hàng',
-            company: 'Công ty TNHH Dịch Vụ Khách Hàng',
-            salary: '8 - 12 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo8.png',
-            title: 'Nhà Phát Triển Phần Mềm',
-            company: 'Công ty Công Nghệ ABC',
-            salary: '20 - 30 triệu',
-            location: 'Hồ Chí Minh'
-        },
-        {
-            logo: 'logo9.png',
-            title: 'Quản Lý Dự Án IT',
-            company: 'Công ty TNHH Công Nghệ Thông Tin',
-            salary: '25 - 35 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo10.png',
-            title: 'Giáo Viên Tiếng Anh',
-            company: 'Trường Quốc Tế XYZ',
-            salary: '10 - 15 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo11.png',
-            title: 'Nhân Viên Telesales',
-            company: 'Công ty TNHH Bán Hàng Trực Tuyến',
-            salary: '8 - 12 triệu',
-            location: 'Hồ Chí Minh'
-        },
-        {
-            logo: 'logo12.png',
-            title: 'Kỹ Sư Điện',
-            company: 'Công ty CP Kỹ Thuật Điện',
-            salary: '15 - 20 triệu',
-            location: 'Đà Nẵng'
-        },
-        {
-            logo: 'logo13.png',
-            title: 'Chuyên Viên Phân Tích Dữ Liệu',
-            company: 'Công ty TNHH Phân Tích Dữ Liệu',
-            salary: '20 - 30 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo14.png',
-            title: 'Thiết Kế Đồ Họa',
-            company: 'Công ty Thiết Kế ABC',
-            salary: '12 - 18 triệu',
-            location: 'Hồ Chí Minh'
-        },
-        {
-            logo: 'logo15.png',
-            title: 'Nhân Viên Nhập Liệu',
-            company: 'Công ty TNHH Dịch Vụ Văn Phòng',
-            salary: '7 - 10 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo16.png',
-            title: 'Lập Trình Viên Web',
-            company: 'Công ty Công Nghệ XYZ',
-            salary: '15 - 25 triệu',
-            location: 'Đà Nẵng'
-        },
-        {
-            logo: 'logo17.png',
-            title: 'Chuyên Viên Tư Vấn Tài Chính',
-            company: 'Công ty Tài Chính ABC',
-            salary: '20 - 30 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo18.png',
-            title: 'Nhân Viên Kho Vận',
-            company: 'Công ty Giao Nhận Vận Tải',
-            salary: '10 - 15 triệu',
-            location: 'Hồ Chí Minh'
-        },
-        {
-            logo: 'logo19.png',
-            title: 'Quản Trị Hệ Thống',
-            company: 'Công ty TNHH Công Nghệ',
-            salary: '25 - 35 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo20.png',
-            title: 'Giáo Viên Mầm Non',
-            company: 'Trường Mầm Non ABC',
-            salary: '8 - 12 triệu',
-            location: 'Đà Nẵng'
-        },
-        {
-            logo: 'logo21.png',
-            title: 'Kỹ Sư Cơ Điện',
-            company: 'Công ty CP Cơ Điện',
-            salary: '20 - 30 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo22.png',
-            title: 'Nhân Viên Kế Toán',
-            company: 'Công ty Kế Toán ABC',
-            salary: '10 - 15 triệu',
-            location: 'Hồ Chí Minh'
-        },
-        {
-            logo: 'logo23.png',
-            title: 'Chuyên Viên Phát Triển Kinh Doanh',
-            company: 'Công ty TNHH Phát Triển Kinh Doanh',
-            salary: '15 - 25 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo24.png',
-            title: 'Chuyên Viên Quan Hệ Khách Hàng',
-            company: 'Công ty TNHH Dịch Vụ Khách Hàng',
-            salary: '10 - 15 triệu',
-            location: 'Đà Nẵng'
-        },
-        {
-            logo: 'logo25.png',
-            title: 'Trợ Lý Giám Đốc',
-            company: 'Công ty Cổ phần Đầu tư ABC',
-            salary: '15 - 20 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo26.png',
-            title: 'Nhân Viên Bán Hàng',
-            company: 'Công ty TNHH Bán Lẻ',
-            salary: '8 - 12 triệu',
-            location: 'Hồ Chí Minh'
-        },
-        {
-            logo: 'logo27.png',
-            title: 'Kỹ Sư Thương Mại',
-            company: 'Công ty CP Kỹ Sư Thương Mại',
-            salary: '20 - 30 triệu',
-            location: 'Đà Nẵng'
-        },
-        {
-            logo: 'logo28.png',
-            title: 'Nhân Viên Hành Chính Nhân Sự',
-            company: 'Công ty TNHH Hành Chính',
-            salary: '10 - 15 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo29.png',
-            title: 'Chuyên Viên SEO',
-            company: 'Công ty TNHH SEO ABC',
-            salary: '12 - 18 triệu',
-            location: 'Hồ Chí Minh'
-        },
-        {
-            logo: 'logo30.png',
-            title: 'Nhân Viên IT Helpdesk',
-            company: 'Công ty TNHH Dịch Vụ IT',
-            salary: '10 - 15 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo31.png',
-            title: 'Kỹ Sư Phần Mềm',
-            company: 'Công ty Công Nghệ XYZ',
-            salary: '20 - 30 triệu',
-            location: 'Đà Nẵng'
-        },
-        {
-            logo: 'logo32.png',
-            title: 'Nhân Viên Quản Lý Chất Lượng',
-            company: 'Công ty TNHH Quản Lý Chất Lượng',
-            salary: '15 - 25 triệu',
-            location: 'Hồ Chí Minh'
-        },
-        {
-            logo: 'logo33.png',
-            title: 'Chuyên Viên Nghiên Cứu Thị Trường',
-            company: 'Công ty TNHH Nghiên Cứu Thị Trường',
-            salary: '10 - 15 triệu',
-            location: 'Hà Nội'
-        },
-        {
-            logo: 'logo34.png',
-            title: 'Nhân Viên Thiết Kế Web',
-            company: 'Công ty Thiết Kế ABC',
-            salary: '15 - 20 triệu',
-            location: 'Đà Nẵng'
-        },
-        {
-            logo: 'logo35.png',
-            title: 'Quản Lý Nhân Sự',
-            company: 'Công ty TNHH Quản Lý Nhân Sự',
-            salary: '25 - 35 triệu',
-            location: 'Hồ Chí Minh'
-        }
+    const [jobs, setJobs] = useState([]);
+    const [savedJobs, setSavedJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
 
-    ];
+    // Fetch danh sách công việc khi component được render
+    useEffect(() => {
+        const fetchJobs = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/jobs');
+                setJobs(response.data);
+                setLoading(false);
+                console.log(response.data);
+            } catch (err) {
+                setError('Không thể tải công việc. Vui lòng thử lại.');
+                setLoading(false);
+            }
+        };
+
+        fetchJobs();
+    }, []);
+
+   
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState('Địa điểm');
@@ -281,16 +58,16 @@ export default function BestJob() {
     const filterJobs = (filter) => {
         switch (filter) {
             case 'Địa điểm':
-                return jobData.filter((job) => job.location.includes('Hà Nội'));
+                return jobs.filter((job) => job.location.includes('Hà Nội'));
             case 'Mức lương':
-                return jobData.filter((job) => parseInt(job.salary.split(' ')[1]) > 15);
+                return jobs.filter((job) => parseInt(job.salary.split(' ')[1]) > 15);
             default:
-                return jobData;
+                return jobs;
         }
     };
 
     const currentJobs = filterJobs(selectedFilter).slice(currentPage * jobsPerPage, (currentPage + 1) * jobsPerPage);
-    const totalPages = Math.ceil(jobData.length / jobsPerPage);
+    const totalPages = Math.ceil(jobs.length / jobsPerPage);
 
     const nextPage = () => {
         if (currentPage < totalPages - 1) {
@@ -359,16 +136,17 @@ export default function BestJob() {
 
             <div className='job-list'>
                 <div className="job-container">
-                    {currentJobs.map((job, index) => (
+                    {jobs.length >0? (
+                    jobs.map((job, index) => (
                         <div key={index} className="job-item-card">
                             <div className="company-logo">
-                                <img src={job.logo} alt="Company Logo" />
+                                <img src={job.company_id? job.company_id.logo:'N/A'} alt="Company Logo" />
                             </div>
                             <div className="job-info-section">
                                 <Link to={`/jobs/jobdetail/${job.id}`} className="position-title">
                                     <h2 className="position-title">{job.title}</h2>
                                 </Link>
-                                <p className="company-name">{job.company}</p>
+                                <p className="company-name">{job.company_id?job.company_id.name:'N/A'}</p>
                                 <div className="job-info">
                                     <span className="salary-info">{job.salary}</span>
                                     <span className="location-info">{job.location}</span>
@@ -378,7 +156,9 @@ export default function BestJob() {
                                 <span>{favorites.includes(job.title) ? '❤️' : '🤍'}</span>
                             </div>
                         </div>
-                    ))}
+                    ))
+                ):(
+                    <p></p>)}
                 </div>
                 <div className="pagination-indicator">
                     <div className="nav-buttons">
