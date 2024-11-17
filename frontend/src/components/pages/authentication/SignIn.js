@@ -38,7 +38,7 @@ export default function SignIn() {
             const data = await response.json();
 
             if (response.ok) {
-                login(data.token, data.role, data.userI);
+                login(data.token, data.role, data.userId);
 
                 if (data.role === 'admin') {
                     navigate('/');
