@@ -73,11 +73,19 @@ export default function SignIn() {
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
+                            <input className="infield-input" type="text" placeholder="Username" />
+                            <label className="infield-label"></label>
+                        </div>
+                        <div className="infield">
                             <input className="infield-input" type="email" placeholder="Email" name="email" />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
                             <input className="infield-input" type="password" placeholder="Password" />
+                            <label className="infield-label"></label>
+                        </div>
+                        <div className="infield">
+                            <input className="infield-input" type="password" placeholder="Confirm Password" />
                             <label className="infield-label"></label>
                         </div>
                         <button className='auth-button'>Sign Up</button>

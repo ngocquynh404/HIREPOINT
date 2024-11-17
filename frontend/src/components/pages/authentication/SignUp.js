@@ -1,8 +1,10 @@
 import '../../../styles/signin.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import apiList from '../../../libs/apiList'
+import { login } from '../../../libs/isAuth';
 
-export default function SignUp() {
+export default function SignIn() {
     const [isRightPanelActive, setIsRightPanelActive] = useState(true); // Đặt mặc định là true để Sign Up hiển thị trước
     const navigate = useNavigate();
 
@@ -16,6 +18,42 @@ export default function SignUp() {
 
     const handleSignUpClick = () => {
         navigate('/sign-up'); // Chuyển hướng đến trang sign-in
+    };
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(apiList.login, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                login(data.token, data.role, data.userId);
+
+                if (data.role === 'admin') {
+                    navigate('/');
+                } else if (data.role === 'recruiter') {
+                    navigate('/');
+                } else {
+                    navigate('/');
+                }
+            } else {
+                setError(data.message); // Hiển thị thông báo lỗi
+            }
+        } catch (err) {
+            setError('Đăng nhập thất bại. Vui lòng thử lại.');
+            console.error(err);
+        }
     };
 
     return (
@@ -35,11 +73,19 @@ export default function SignUp() {
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
+                            <input className="infield-input" type="text" placeholder="Username" />
+                            <label className="infield-label"></label>
+                        </div>
+                        <div className="infield">
                             <input className="infield-input" type="email" placeholder="Email" name="email" />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
                             <input className="infield-input" type="password" placeholder="Password" />
+                            <label className="infield-label"></label>
+                        </div>
+                        <div className="infield">
+                            <input className="infield-input" type="password" placeholder="Confirm Password" />
                             <label className="infield-label"></label>
                         </div>
                         <button className='auth-button'>Sign Up</button>
@@ -55,15 +101,31 @@ export default function SignUp() {
                         </div>
                         <span className='auth-form-span'>or use your account</span>
                         <div className="infield">
-                            <input className="infield-input" type="email" placeholder="Email" name="email" />
+                            <input
+                                className="infield-input"
+                                type="email"
+                                placeholder="Email"
+                                name="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)} // Cập nhật state
+                                required
+                            />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="password" placeholder="Password" />
+                            <input
+                                className="infield-input"
+                                type="password"
+                                placeholder="Password"
+                                name="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)} // Cập nhật state
+                                required
+                            />
                             <label className="infield-label"></label>
                         </div>
                         <a href="#" className="forgot">Forgot your password?</a>
-                        <button className='auth-button'>Sign In</button>
+                        <button className='auth-button' type='button' onClick={handleSubmit}>Sign In</button>
                     </form>
                 </div>
                 <div className="overlay-container" id="overlayCon">
