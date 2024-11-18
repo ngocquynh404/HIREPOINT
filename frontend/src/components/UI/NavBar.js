@@ -5,7 +5,8 @@ import Blog from "../pages/blog/Blog";
 import Jobs from "../pages/job/Job";
 import DropNavBar from "./DropNavBar";
 import DropNavBarCenter from "./DropNavBarCenter";
-import ApplicantNavBar from "../../components/pages/applicant/ApplicantNavBar"
+import ApplicantNavBar from "../pages/applicant/ApplicantNavBar";
+import RecruiterNavbar from "../pages/recruiter/RecruiterNavbar";
 import { isAuth, userType } from "../../libs/isAuth";
 import '../../styles/navbar.css';
 
@@ -36,7 +37,7 @@ export default function Navbar() {
                     </>
                   ) : (
                     <>
-                      <Link className="nav-link" to="/howitworks">How it works</Link>
+                      <Link className="nav-link" to="/recruiter-sign-in">Nhà tuyển dụng</Link>
                       <Jobs className="nav-link">Jobs</Jobs>
                       <Link className="nav-link" to="/companies">Companies</Link>
                       <Link className="nav-link" to="/leaderboard">Leaderboard</Link>
@@ -58,7 +59,7 @@ export default function Navbar() {
             )}
             {userType() === "recruiter" && (
               <>
-                <p>recruiter</p>
+                <RecruiterNavbar />
               </>
             )}            
             {userType() === "admin" && (
@@ -79,7 +80,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link className="nav-link" to="/howitworks">How it works</Link>
+                  <Link className="nav-link" to="/recruiter-sign-in">Nhà tuyển dụng</Link>
                   <Jobs className="nav-link">Jobs</Jobs>
                   <Link className="nav-link" to="/companies">Companies</Link>
                   <Link className="nav-link" to="/leaderboard">Leaderboard</Link>

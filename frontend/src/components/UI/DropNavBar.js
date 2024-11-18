@@ -70,12 +70,12 @@ export default function DropNavBar() {
               onMouseLeave={handlePanelMouseLeave}
             >
               <div className="popover-nav-inner">
-                <Link to="/howitworks" className="link-nav">
+                <Link to="/recruiter-sign-in" className="link-nav">
                   <div className="icon-nav">
                     <FontAwesomeIcon icon={faNewspaper} />
                   </div>
                   <div className="text-nav">
-                    <p className="text-md-nav">How it works</p>
+                    <p className="text-md-nav">Nhà tuyển dụng</p>
                   </div>
                 </Link>
                 <Jobs className="link-nav">

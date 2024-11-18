@@ -43,9 +43,9 @@ export default function SignIn() {
                 if (data.role === 'admin') {
                     navigate('/');
                 } else if (data.role === 'recruiter') {
-                    navigate('/');
+                    navigate('/recruiter-page');
                 } else {
-                    navigate('/');
+                    navigate('/applicant-page');
                 }
             } else {
                 setError(data.message); // Hiển thị thông báo lỗi

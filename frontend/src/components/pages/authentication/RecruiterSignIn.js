@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import apiList from '../../../libs/apiList'
 import { login } from '../../../libs/isAuth';
 
-export default function SignIn() {
-    const [isRightPanelActive, setIsRightPanelActive] = useState(true); // Đặt mặc định là true để Sign Up hiển thị trước
+export default function RecruiterSignIn() {
+    const [isRightPanelActive, setIsRightPanelActive] = useState(false); // Đặt mặc định là true để Sign Up hiển thị trước
     const navigate = useNavigate();
 
     const handleOverlayClick = () => {
@@ -58,7 +58,7 @@ export default function SignIn() {
 
     return (
         <div className='auth-body'>
-            <div className={`auth-container ${isRightPanelActive ? 'right-panel-active' : ''}`} id="container">
+            <div className={`auth-container ${isRightPanelActive ? 'right-panel-active' : ''}`} id="container" style={{ height: "700px" }}>
                 <div className="auth-form-container sign-up-container">
                     <form className='auth-form' action="#">
                         <h1 className='auth-form-header'>Create Account</h1>
@@ -73,7 +73,7 @@ export default function SignIn() {
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="text" placeholder="Username" />
+                            <input className="infield-input" type="text" placeholder="Phone Number" />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
@@ -86,6 +86,18 @@ export default function SignIn() {
                         </div>
                         <div className="infield">
                             <input className="infield-input" type="password" placeholder="Confirm Password" />
+                            <label className="infield-label"></label>
+                        </div>
+                        <div className="infield">
+                            <input className="infield-input" type="password" placeholder="Company Name" />
+                            <label className="infield-label"></label>
+                        </div>
+                        <div className="infield">
+                            <input className="infield-input" type="password" placeholder="Major" />
+                            <label className="infield-label"></label>
+                        </div>
+                        <div className="infield">
+                            <input className="infield-input" type="password" placeholder="Address" />
                             <label className="infield-label"></label>
                         </div>
                         <button className='auth-button'>Sign Up</button>
@@ -149,7 +161,7 @@ export default function SignIn() {
                             </button>
                         </div>
                     </div>
-                    <button id="overlayBtn" onClick={handleOverlayClick} className="btnScaled"></button>
+                    <button id="overlayBtn" style={{ top: "402px" }} onClick={handleOverlayClick} className="btnScaled"></button>
                 </div>
             </div>
         </div>

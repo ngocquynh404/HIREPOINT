@@ -5,7 +5,7 @@ import { faUser, faBuilding, faBriefcase, faBell, faCogs, faSignOutAlt, faQuesti
 import { logout } from "../../../libs/isAuth";
 import { Link, useNavigate } from 'react-router-dom';
 
-export default function UserProfileMenu() {
+export default function ApplicantNavBar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleMenu = () => {
