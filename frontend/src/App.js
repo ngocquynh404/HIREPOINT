@@ -31,7 +31,7 @@ function Layout() {
         <Route exact path="/jobs/job-recommendation" element={<JobRecommendation />} />
         <Route exact path="/jobs/jobdetail/:id" element={<JobDetail />} />
         <Route exact path="/companies" element={<TopCompany />} />
-        <Route exact path="/companies/companydetail/:id" element={<CompanyDetail />} />
+        <Route exact path="/companies/companydetail/:companyId" element={<CompanyDetail />} />
         <Route exact path="/sign-in" element={<SignIn />} />
         <Route exact path="/sign-up" element={<SignUp />} />
         <Route exact path="/search-job" element={<SearchJob />} />
