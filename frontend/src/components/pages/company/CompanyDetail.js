@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Link, useParams } from "react-router-dom";
 import '../../../styles/companydetail.css';
 import ApplyJob from '../applicant/ApplyJob';
+import axios from 'axios';
 
 const companyWall = {
     banner: 'https://example.com/600x200',
@@ -25,8 +26,11 @@ const company = {
 };
 
 export default function CompanyDetail() {
-
-    const jobData = [
+    const [company, setCompany] = useState(null);
+    const [loading, setLoading] = useState(true);  // Declare loading state
+    const [error, setError] = useState(null);
+    const [followedCompanies, setFollowedCompanies] = useState([]);
+    /*const jobData = [
         {
             id: 1,
             logo: 'logo1.png',
@@ -107,8 +111,23 @@ export default function CompanyDetail() {
             updateTime: '6 ngày',
             remainingDays: 14
         }
-    ];
+    ];*/
 
+    const { id } = useParams();
+    useEffect(() => {
+        const fetchCompany = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/api/companies/${id}`);
+                setCompany(response.data);
+                setLoading(false);
+            } catch (error) {
+                setError('Error fetching company data');
+                setLoading(false);
+            }
+        };
+
+        fetchCompany();
+    }, [id]);
     const [favorites, setFavorites] = useState([]);
 
     const toggleFavorite = (jobTitle) => {
@@ -122,18 +141,18 @@ export default function CompanyDetail() {
     };
 
     ///apply job
-    const [jobList, setJobList] = useState(jobData); // Dữ liệu danh sách công việc
-    const [favoriteJobs, setFavoriteJobs] = useState([]); // Danh sách công việc yêu thích
+    // const [jobList, setJobList] = useState(jobData); // Dữ liệu danh sách công việc
+    // const [favoriteJobs, setFavoriteJobs] = useState([]); // Danh sách công việc yêu thích
     const [jobToApply, setJobToApply] = useState(null); // Công việc được chọn để ứng tuyển
 
-    const handleFavoriteToggle = (jobTitle) => {
+    /*const handleFavoriteToggle = (jobTitle) => {
         setFavoriteJobs((prevFavorites) =>
             prevFavorites.includes(jobTitle)
                 ? prevFavorites.filter((title) => title !== jobTitle)
                 : [...prevFavorites, jobTitle]
         );
     };
-
+*/
     const openApplyForm = (job) => {
         setJobToApply(job); // Gán công việc được chọn
     };
@@ -141,37 +160,73 @@ export default function CompanyDetail() {
     const closeApplyForm = () => {
         setJobToApply(null); // Đóng form ứng tuyển
     };
+    const handleFollow = async (companyId) => {
+        try {
+            const token = localStorage.getItem('token');  // Lấy token từ localStorage
+
+            if (!token) {
+                alert('Bạn chưa đăng nhập. Vui lòng đăng nhập lại.');
+                return;
+            }
+
+            const response = await axios.post(
+                'http://localhost:5000/api/followedcompanies',
+                { company_id: companyId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (response.status === 201) {
+                alert('Công ty đã được theo dõi!');
+                window.location.reload();
+                setFollowedCompanies((prevFollowedCompanies) => [
+                    ...prevFollowedCompanies,
+                    response.data.followedCompany,
+                ]);
+            }
+        } catch (err) {
+            if (err.response) {
+                const { status, data } = err.response;
+
+                if (status === 401) {
+                    alert(data.message || 'Bạn chưa đăng nhập. Vui lòng đăng nhập lại.');
+                }
+                else {
+                    alert(data.message || 'Không thể theo dõi công ty. Vui lòng thử lại.');
+                }
+            }
+        }
+    };
 
     return (
         <div className='company-detail'>
             <div className="company-detail-info-container">
                 {/* Banner của công ty */}
                 <div className="company-detail-info-banner">
-                    <img src={companyWall.banner} alt="Company Banner" />
+                    <img src={company?.logo} alt="Company Banner" />
                 </div>
 
                 {/* Phần thông tin chính */}
                 <div className="company-detail-info-content">
                     {/* Logo công ty */}
                     <div className="company-detail-info-logo">
-                        <img src={companyWall.logo} alt="Company Logo" />
+                        <img src={company?.logo} alt="Company Logo" />
                     </div>
 
                     {/* Chi tiết công ty */}
                     <div className="company-detail-info-details">
-                        <h2 className="company-detail-info-name">{companyWall.name}</h2>
+                        <h2 className="company-detail-info-name">{company?.name}</h2>
                         <div className="company-detail-info-meta">
                             <span className="company-detail-info-size">
-                                🏢 {companyWall.size}
+                                🏢 {company?.quymo}
                             </span>
                             <span className="company-detail-info-followers">
-                                👥 {companyWall.followers} người theo dõi
+                                👥 {company?.industry} {/*người theo dõi*/}
                             </span>
                         </div>
                     </div>
 
                     {/* Nút theo dõi công ty */}
-                    <button className="company-detail-info-follow-button">
+                    <button onClick={() => handleFollow(company._id)} className="company-detail-info-follow-button">
                         + Theo dõi công ty
                     </button>
                 </div>
@@ -180,7 +235,7 @@ export default function CompanyDetail() {
                 <div className="company-detail-info-main">
                     <div className="company-detail-info-intro">
                         <h2>Giới thiệu công ty</h2>
-                        <p>{company.description}</p>
+                        <p>{company?.description}</p>
                         <button className="company-detail-info-toggle">Thu gọn</button>
                     </div>
 
@@ -189,7 +244,7 @@ export default function CompanyDetail() {
                         <div className='company-detail-info-list-left'>
                             <div className='company-detail-info-list'>
                                 <div className="company-detail-info-board-list-container">
-                                    {jobData.map((job, index) => (
+                                    {/*} {map((job, index) => (
                                         <div key={index} className="company-detail-info-item">
                                             <div className="company-detail-info-company-logo">
                                                 <img src={job.logo} alt="Company Logo" />
@@ -213,7 +268,7 @@ export default function CompanyDetail() {
                                                 </div>
                                             </div>
                                         </div>
-                                    ))}
+                                    ))} */}
                                 </div>
                             </div>
                         </div>
@@ -229,8 +284,8 @@ export default function CompanyDetail() {
                     <div className="company-detail-info-contact">
                         <h3>Thông tin liên hệ</h3>
                         <p>📍 Địa chỉ công ty</p>
-                        <p>🏢 {company.address}</p>
-                        <a href={company.mapLink} target="_blank" rel="noopener noreferrer">
+                        <p>🏢 {company?.location}</p>
+                        <a href={""} target="_blank" rel="noopener noreferrer">
                             📍 Xem bản đồ
                         </a>
                         <div className="map-container">
@@ -249,7 +304,7 @@ export default function CompanyDetail() {
                         <h3>Chia sẻ công ty tới bạn bè</h3>
                         <p>Sao chép đường dẫn công ty</p>
                         <div className="share-link">
-                            <input type="text" value="https://topcv.vn/cong-ty/kohnan-vietnam" readOnly />
+                            <input type="text" value={company?.website} readOnly />
                             <button>📋</button>
                         </div>
                         <p>Chia sẻ qua mạng xã hội</p>
