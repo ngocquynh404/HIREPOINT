@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Profile = require('../models/Profile');
-const authenticateToken = require('../middleware/authenticateToken');
 const mongoose = require('mongoose');
+const Profile = require('../models/Profile');
+const User = require('../models/User');
+const authenticateToken = require('../middleware/authenticateToken');
 
 // GET all profiles (if needed)
 router.get('/', async (req, res) => {
@@ -19,7 +20,7 @@ router.post('/', authenticateToken, async (req, res) => {
   try {
     console.log('Received data:', req.body); // Log incoming data from the client
 
-    const { full_name, address, education, experience, skills, cv_file } = req.body;
+    const { full_name, address, education, experience, skills, cv_file, industry } = req.body; // Include industry in the request body
 
     // Check if the profile already exists for the user
     const existingProfile = await Profile.findOne({ user_id: req.userId });
@@ -36,7 +37,8 @@ router.post('/', authenticateToken, async (req, res) => {
       education,
       experience,
       skills,
-      cv_file
+      cv_file,
+      industry // Save industry data
     });
 
     await profile.save();
@@ -48,6 +50,7 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+// GET profile by user ID (job details for user)
 router.get('/job/:userId', async (req, res) => {
   try {
     const profile = await Profile.findOne({ user_id: req.params.userId });
@@ -62,6 +65,7 @@ router.get('/job/:userId', async (req, res) => {
     res.status(500).json({ message: 'Có lỗi khi lấy thông tin profile.' });
   }
 });
+
 // GET profile by ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
@@ -83,9 +87,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// PUT update profile by ID
 router.put('/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
-  const { full_name, address, education, experience, skills, cv_file } = req.body;
+  const { full_name, address, education, experience, skills, cv_file, industry } = req.body; // Include industry in the request body
 
   // Kiểm tra ObjectId hợp lệ
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -106,7 +111,16 @@ router.put('/:id', authenticateToken, async (req, res) => {
     // Cập nhật hồ sơ
     const updatedProfile = await Profile.findByIdAndUpdate(
       id,
-      { full_name, address, education, experience, skills, cv_file, updated_at: new Date() },
+      { 
+        full_name, 
+        address, 
+        education, 
+        experience, 
+        skills, 
+        cv_file, 
+        industry, // Update industry
+        updated_at: new Date() 
+      },
       { new: true } // Trả về hồ sơ đã được cập nhật
     );
 
@@ -142,6 +156,28 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error deleting profile:', error);
     res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+// GET full user information after login
+router.get('/me/full', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).populate('profile'); // Populate nếu cần thông tin hồ sơ
+    if (!user) {
+      return res.status(404).json({ message: 'Người dùng không tồn tại' });
+    }
+    res.json({
+      userId: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      fullName: user.profile ? user.profile.full_name : null,
+      industry: user.profile ? user.profile.industry : null, // Include industry in the response
+      // Các thông tin khác từ Profile
+    });
+  } catch (err) {
+    console.error('Lỗi khi lấy thông tin người dùng:', err);
+    res.status(500).json({ message: 'Lỗi server', error: err.message });
   }
 });
 

@@ -12,7 +12,7 @@ router.post('/save-job', authenticateToken, async (req, res) => {
     // Check if the job has already been saved by this user
     const existingSavedJob = await SavedJob.findOne({ user_id, job_id });
     if (existingSavedJob) {
-      return res.status(400).json({ message: 'Job already saved' });
+      return res.status(409).json({ message: 'Bạn đã lưu công việc này trước đó' });
     }
 
     // Save the job to the SavedJob collection
@@ -27,6 +27,7 @@ router.post('/save-job', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 });
+
 router.get('/user/me', authenticateToken, async (req, res) => {
   const userId = req.userId; // userId đã được xác thực từ JWT token
 

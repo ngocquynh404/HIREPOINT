@@ -7,6 +7,7 @@ const profileSchema = new mongoose.Schema({
   education: { type: String },
   experience: { type: [String] },
   skills: { type: [String] },
+  industry: { type: String },
   cv_file: { type: String },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
