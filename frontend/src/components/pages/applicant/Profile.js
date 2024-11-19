@@ -422,34 +422,35 @@ const Profile = () => {
     setIsChecked(!isChecked);
   };
   ///////////////////////////////END FORM KINH NGHIỆM////////////////////////
-
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  const [profiles, setProfiles] = useState([]);
+  const [currentUserProfile, setCurrentUserProfile] = useState(null); // State to store the current user's profile
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // State for error handling
   useEffect(() => {
-    const fetchUserData = async () => {
+    const token = localStorage.getItem('token');
+  
+    if (!token) {
+      setError('No token found!');
+      setLoading(false);
+      return;
+    }
+  
+    const fetchProfiles = async () => {
       try {
-        const token = localStorage.getItem('authToken'); // Get the token from localStorage
-
-        const response = await axios.get('http://localhost:5000/api/profiles/me/full', {
-          headers: {
-            Authorization: `Bearer ${token}`, // Add token in headers
-          },
+        const response = await axios.get('http://localhost:5000/api/profiles/list', {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        console('token', token);
-        setUserData(response.data); // Update the state with the user data
-        setLoading(false); // Set loading to false
-      } catch (err) {
-        setError('Lỗi khi lấy thông tin người dùng');
-        setLoading(false); // Set loading to false on error
+        setProfiles(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        setError('Error fetching profiles');
+      } finally {
+        setLoading(false); // Make sure loading is set to false after the fetch operation
       }
     };
-
-    fetchUserData();
-  }, []); // Empty dependency array to run the effect only once on mount
-
-
+  
+    fetchProfiles();
+  }, []);
+  
   return (
     <div className='my-profile'>
       {/* Form thông tin cơ bản *********************************************/}
@@ -458,67 +459,83 @@ const Profile = () => {
         <button className="user-info-edit-btn" onClick={handleEditBasicInfoClick}>
           <FaEdit />
         </button>
+        {loading ? (
+        <p>Loading profiles...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : profiles.length > 0 ? (
+        profiles.map((profile) => (
+          <div key={profile._id}>
+            <div className='user-info-name-position'>
 
-        <div className='user-info-name-position'>
-          <div className="user-info-avatar"></div>
-          {userData?.avatar && <img src={userData.avatar} alt="Avatar" />}
-          <h2 className="user-info-name">{userData?.profile ? `${userData.profile.first_name} ${userData.profile.last_name}` : 'No Name'}
-          </h2>
-          <p className="user-info-position">{userData?.profile ? userData.profile.job_title : 'No Job Title'}
-          </p>
-          <p className="user-info-position">{userData?.profile && userData.profile.years_of_experience
-            ? `${userData.profile.years_of_experience} years experience`
-            : 'No Experience'}
-          </p>
-        </div>
-        <div className="user-info-details">
-          <div className='user-info-1'>
-            <h3 className='user-basic-info-header'>Thông tin cơ bản</h3>
-            <div className='user-basic-info'>
-              <div className="user-info">
-                <div>
-                  <FaEnvelope className="user-info-icon" />
-                  <span>{userData?.email}</span>
-                </div>
-                <div>
-                  <FaMapMarkerAlt className="user-info-icon" />
-                  <span>{userData?.profile?.location}</span>
-                </div>
-                <div>
-                  <FaPhone className="user-info-icon" />
-                  <span>{userData?.profile?.phone}</span>
+              <div className="user-info-avatar"></div>
+              {<img src={''} alt="Avatar" />}
+              <h2 className="user-info-name"> {profile.first_name && profile.last_name
+                    ? `${profile.first_name} ${profile.last_name}`
+                    : 'No Name'}
+              </h2>
+              <p className="user-info-position">{profile.job_title ? profile.job_title : 'No Job Title'}
+              </p>
+              <p className="user-info-position">{profile.years_of_experience
+                    ? `${profile.years_of_experience} years experience`
+                    : 'No Experience'}
+              </p>
+            </div>
+            <div className="user-info-details">
+              <div className='user-info-1'>
+                <h3 className='user-basic-info-header'>Thông tin cơ bản</h3>
+                <div className='user-basic-info'>
+                  <div className="user-info">
+                    <div>
+                      <FaEnvelope className="user-info-icon" />
+                      <span>{profile.email || 'No Email'}</span>
+                    </div>
+                    <div>
+                      <FaMapMarkerAlt className="user-info-icon" />
+                      <span>{profile.location || 'No Location'}</span>
+                    </div>
+                    <div>
+                      <FaPhone className="user-info-icon" />
+                      <span>{profile.phone || 'No Phone'}</span>
+                    </div>
+                  </div>
+                  <div className='user-info'>
+                    <div>
+                      <FaBriefcase className="user-info-icon" />
+                      <span>{profile.job_level || 'No Job Level'}</span>
+                    </div>
+                    <div>
+                      <FaGraduationCap className="user-info-icon" />
+                      <span>{profile.education || 'No Education'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className='user-info'>
-                <div>
-                  <FaBriefcase className="user-info-icon" />
-                  <span>{userData?.profile?.job_level || 'No Job Level'}</span>
-                </div>
-                <div>
-                  <FaGraduationCap className="user-info-icon" />
-                  <span>{userData?.profile?.education || 'No Education'}</span>
+              <div className='user-info-2'>
+                <h3 className='user-basic-info-header'>Công việc mong muốn </h3>
+                <div className='user-basic-info'>
+                  <div className="user-info">
+                    <div>
+                      <FaEnvelope className="user-info-icon" />
+                      <span>Nơi làm việc: {profile.desired_work_location || 'No Desired Location'}</span>
+                    </div>
+                  </div>
+                  <div className='user-info'>
+                    <div>
+                      <FaBriefcase className="user-info-icon" />
+                      <span>Mức lương: {profile.desired_salary
+                            ? `$${profile.desired_salary}/Tháng`
+                            : 'No Desired Salary'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className='user-info-2'>
-            <h3 className='user-basic-info-header'>Công việc mong muốn </h3>
-            <div className='user-basic-info'>
-              <div className="user-info">
-                <div>
-                  <FaEnvelope className="user-info-icon" />
-                  <span>Nơi làm việc: {userData?.profile?.desired_work_location || 'No Desired Location'}</span>
-                </div>
-              </div>
-              <div className='user-info'>
-                <div>
-                  <FaBriefcase className="user-info-icon" />
-                  <span>Mức lương: {userData?.profile?.desired_salary ? `$${userData.profile.desired_salary}/Tháng` : 'No Desired Salary'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        ))
+      ) : (
+        <p>No profiles found.</p>
+      )}
       </div>
       {/* Form chỉnh sửa thông tin cơ bản *********************************************/}
       {isEditBasicInfoOpen && (
