@@ -48,9 +48,9 @@ export default function SignIn() {
                 if (data.role === 'admin') {
                     navigate('/');
                 } else if (data.role === 'recruiter') {
-                    navigate('/');
+                    navigate('/recruiter-page');
                 } else {
-                    navigate('/');
+                    navigate('/applicant-page');
                 }
             } else {
                 setError(data.message); // Hiển thị thông báo lỗi
@@ -119,7 +119,7 @@ export default function SignIn() {
                         </div>
                         <span className='auth-form-span'>or use your email for registration</span>
                         <div className="infield">
-                            <input className="infield-input" type="text" name="username" placeholder="Name" value={form.username}
+                            <input className="infield-input" type="text" name="username" placeholder="Username" value={form.username}
                                 onChange={handleChange}
                                 required />
                             <label className="infield-label"></label>
@@ -142,6 +142,10 @@ export default function SignIn() {
                             <input className="infield-input" type="password" name="confirmPassword" placeholder="Comfirm Password" value={form.confirmPassword}
                                 onChange={handleChange}
                                 required />
+                            <label className="infield-label"></label>
+                        </div>
+                        <div className="infield">
+                            <input className="infield-input" type="password" placeholder="Confirm Password" />
                             <label className="infield-label"></label>
                         </div>
                         <button className='auth-button'>Sign Up</button>

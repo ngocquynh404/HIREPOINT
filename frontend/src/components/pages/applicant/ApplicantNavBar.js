@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 
-export default function UserProfileMenu() {
+export default function ApplicantNavBar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [user, setUser] = useState(null); // Lưu trữ dữ liệu người dùng
     const [error, setError] = useState(null); // Lưu trữ lỗi (nếu có)

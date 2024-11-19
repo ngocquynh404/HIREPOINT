@@ -5,6 +5,7 @@ import { faChevronDown, faCode, faNewspaper, faBars } from "@fortawesome/free-so
 import { Link } from "react-router-dom";
 import '../../styles/dropnavbar.css';
 import Blog from "../pages/blog/Blog";
+import Jobs from "../pages/job/Job";
 import { isAuth, userType } from "../../libs/isAuth";
 
 
@@ -28,7 +29,7 @@ export default function DropNavBar() {
     setIsOpen(true);
   };
 
-  const handlePanelMouseLeave = () => {
+  const handlePanelMouseLeave = () => { 
     timeoutRef.current = setTimeout(() => {
       setIsOpen(false);
     }, 200); // Độ trễ tương tự cho bảng
@@ -69,23 +70,23 @@ export default function DropNavBar() {
               onMouseLeave={handlePanelMouseLeave}
             >
               <div className="popover-nav-inner">
-                <Link to="/blog/news" className="link-nav">
+                <Link to="/recruiter-sign-in" className="link-nav">
                   <div className="icon-nav">
                     <FontAwesomeIcon icon={faNewspaper} />
                   </div>
                   <div className="text-nav">
-                    <p className="text-md-nav">How it works</p>
+                    <p className="text-md-nav">Nhà tuyển dụng</p>
                   </div>
                 </Link>
-                <Link to="/blog/news" className="link-nav">
+                <Jobs className="link-nav">
                   <div className="icon-nav">
                     <FontAwesomeIcon icon={faCode} />
                   </div>
                   <div className="text-nav">
                     <p className="text-md-nav">Jobs</p>
                   </div>
-                </Link>
-                <Link to="/blog/news" className="link-nav">
+                </Jobs>
+                <Link to="/companies" className="link-nav">
                   <div className="icon-nav">
                     <FontAwesomeIcon icon={faCode} />
                   </div>
@@ -93,7 +94,7 @@ export default function DropNavBar() {
                     <p className="text-md-nav">Companies</p>
                   </div>
                 </Link>
-                <Link to="/blog/news" className="link-nav">
+                <Link to="/leaderboard" className="link-nav">
                   <div className="icon-nav">
                     <FontAwesomeIcon icon={faCode} />
                   </div>
@@ -101,7 +102,7 @@ export default function DropNavBar() {
                     <p className="text-md-nav">Leaderboard</p>
                   </div>
                 </Link>
-                <Blog to="/blog/news" className="link-nav">
+                <Blog to="/blog-home" className="link-nav">
                   <div className="icon-nav">
                     <FontAwesomeIcon icon={faCode} />
                   </div>

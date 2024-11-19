@@ -60,6 +60,7 @@
     color: #333; /* text color */
     text-decoration: none; /* No underline */
     transition: background-color 0.3s;
+    cursor: pointer;
   }
   
   .link:hover {
