@@ -58,23 +58,15 @@ export default function TopCompany() {
     useEffect(() => {
         // Lấy tất cả các công ty
         const fetchAllCompanies = async () => {
-            const token = localStorage.getItem('token'); // Lấy token từ localStorage
-            if (!token) {
-                setError('Bạn cần đăng nhập để xem danh sách công ty.');
-                return;
-            }
-
             try {
-                const response = await axios.get('http://localhost:5000/api/companies', {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                const response = await axios.get('http://localhost:5000/api/companies');
                 setCompanies(response.data);
             } catch (error) {
                 console.error('Error fetching all companies:', error);
                 setError('Không thể tải danh sách công ty.');
             }
         };
-        fetchAllCompanies();
+        fetchAllCompanies();        
     }, []);
 
     return (

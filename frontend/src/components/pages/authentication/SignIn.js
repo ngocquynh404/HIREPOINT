@@ -7,7 +7,12 @@ import { login } from '../../../libs/isAuth';
 export default function SignIn() {
     const [isRightPanelActive, setIsRightPanelActive] = useState(false); // Đặt mặc định là true để Sign Up hiển thị trước
     const navigate = useNavigate();
-
+    const [form, setForm] = useState({
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+    });
     const handleOverlayClick = () => {
         setIsRightPanelActive(!isRightPanelActive);
     };
@@ -55,6 +60,51 @@ export default function SignIn() {
             console.error(err);
         }
     };
+    const handleSubmitSignUp = async (e) => {
+        e.preventDefault();
+
+        // Kiểm tra nếu mật khẩu và xác nhận mật khẩu khớp
+        if (form.password !== form.confirmPassword) {
+            alert("Mật khẩu không khớp!");
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:5000/api/users/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: form.username,
+                    password: form.password,
+                    email: form.email,
+                    role: 'applicant',
+                    phone: '',
+                    avatar: null
+                }),
+            });
+
+            const data = await response.json();
+            navigate("/sign-in");
+            // Nếu response có lỗi, hiển thị lỗi
+            if (!response.ok) {
+                alert(data.message || "Đăng ký thất bại!");
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error("Đã xảy ra lỗi khi đăng ký:", error);
+            alert("Đăng ký thất bại!");
+        }
+    };
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setForm({
+            ...form,
+            [name]: type === 'checkbox' ? checked : value,
+        });
+    };
 
     return (
         <div className='auth-body'>
@@ -69,19 +119,29 @@ export default function SignIn() {
                         </div>
                         <span className='auth-form-span'>or use your email for registration</span>
                         <div className="infield">
-                            <input className="infield-input" type="text" placeholder="Name" />
+                            <input className="infield-input" type="text" name="username" placeholder="Username" value={form.username}
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="text" placeholder="Username" />
+                            <input className="infield-input" type="email" placeholder="Email" name="email" value={form.email}
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="email" placeholder="Email" name="email" />
+                            <input className="infield-input" type="password" placeholder="Password" value={form.password}
+                                onChange={handleChange}
+                                required />
+
                             <label className="infield-label"></label>
+
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="password" placeholder="Password" />
+                            <input className="infield-input" type="password" name="confirmPassword" placeholder="Comfirm Password" value={form.confirmPassword}
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">

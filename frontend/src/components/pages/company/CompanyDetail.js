@@ -113,12 +113,13 @@ export default function CompanyDetail() {
         }
     ];*/
 
-    const { id } = useParams();
+    const { companyId } = useParams();
     useEffect(() => {
         const fetchCompany = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/companies/${id}`);
+                const response = await axios.get(`http://localhost:5000/api/companies/${companyId}`);
                 setCompany(response.data);
+                console.log('Company ID:', companyId);
                 setLoading(false);
             } catch (error) {
                 setError('Error fetching company data');
@@ -127,7 +128,7 @@ export default function CompanyDetail() {
         };
 
         fetchCompany();
-    }, [id]);
+    }, [companyId]);
     const [favorites, setFavorites] = useState([]);
 
     const toggleFavorite = (jobTitle) => {
