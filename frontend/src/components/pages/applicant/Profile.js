@@ -1,10 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import '../../../styles/profile.css';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaGraduationCap, FaEdit, FaMedal, FaUniversity, FaBook, FaAward, FaBriefcase, FaCalendarAlt, FaBuilding, FaCheckCircle } from 'react-icons/fa';
 import UploadCV from './UploadCV';
 import { EditorState } from 'draft-js';
 import { Editor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import axios from 'axios';
 
 const skills = [
   "Quản lý dự án phần mềm",
@@ -266,9 +267,9 @@ const Profile = () => {
 
   // Danh sách các lựa chọn giới tính
   const genderOptions = [
-    { label: "Nam", value: "male", icon: "👨" },
-    { label: "Nữ", value: "female", icon: "👩" },
-    { label: "Khác", value: "other", icon: "🌈" },
+    { label: "Nam", value: "Male", icon: "👨" },
+    { label: "Nữ", value: "Female", icon: "👩" },
+    { label: "Khác", value: "Other", icon: "🌈" },
   ];
 
   // Xử lý khi chọn giới tính
@@ -422,20 +423,53 @@ const Profile = () => {
   };
   ///////////////////////////////END FORM KINH NGHIỆM////////////////////////
 
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('authToken'); // Get the token from localStorage
+
+        const response = await axios.get('http://localhost:5000/api/profiles/me/full', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add token in headers
+          },
+        });
+        console('token', token);
+        setUserData(response.data); // Update the state with the user data
+        setLoading(false); // Set loading to false
+      } catch (err) {
+        setError('Lỗi khi lấy thông tin người dùng');
+        setLoading(false); // Set loading to false on error
+      }
+    };
+
+    fetchUserData();
+  }, []); // Empty dependency array to run the effect only once on mount
 
 
   return (
     <div className='my-profile'>
       {/* Form thông tin cơ bản *********************************************/}
       <div className="user-info-card">
+
         <button className="user-info-edit-btn" onClick={handleEditBasicInfoClick}>
           <FaEdit />
         </button>
+
         <div className='user-info-name-position'>
           <div className="user-info-avatar"></div>
-          <h2 className="user-info-name">Ma Thị Ngọc Quỳnh</h2>
-          <p className="user-info-position">IT Manager</p>
-          <p className="user-info-position">2 năm kinh nghiệm</p>
+          {userData?.avatar && <img src={userData.avatar} alt="Avatar" />}
+          <h2 className="user-info-name">{userData?.profile ? `${userData.profile.first_name} ${userData.profile.last_name}` : 'No Name'}
+          </h2>
+          <p className="user-info-position">{userData?.profile ? userData.profile.job_title : 'No Job Title'}
+          </p>
+          <p className="user-info-position">{userData?.profile && userData.profile.years_of_experience
+            ? `${userData.profile.years_of_experience} years experience`
+            : 'No Experience'}
+          </p>
         </div>
         <div className="user-info-details">
           <div className='user-info-1'>
@@ -444,42 +478,42 @@ const Profile = () => {
               <div className="user-info">
                 <div>
                   <FaEnvelope className="user-info-icon" />
-                  <span>ngocquynh141@gmail.com</span>
+                  <span>{userData?.email}</span>
                 </div>
                 <div>
                   <FaMapMarkerAlt className="user-info-icon" />
-                  <span>Hồ Chí Minh, Việt Nam</span>
+                  <span>{userData?.profile?.location}</span>
                 </div>
                 <div>
                   <FaPhone className="user-info-icon" />
-                  <span>+84-576265702</span>
+                  <span>{userData?.profile?.phone}</span>
                 </div>
               </div>
               <div className='user-info'>
                 <div>
                   <FaBriefcase className="user-info-icon" />
-                  <span>Thêm Cấp Bậc Hiện Tại</span>
+                  <span>{userData?.profile?.job_level || 'No Job Level'}</span>
                 </div>
                 <div>
                   <FaGraduationCap className="user-info-icon" />
-                  <span>Thêm Bằng Cấp Cao Nhất</span>
+                  <span>{userData?.profile?.education || 'No Education'}</span>
                 </div>
               </div>
             </div>
           </div>
           <div className='user-info-2'>
-            <h3 className='user-basic-info-header'>Công việc mong muốn</h3>
+            <h3 className='user-basic-info-header'>Công việc mong muốn </h3>
             <div className='user-basic-info'>
               <div className="user-info">
                 <div>
                   <FaEnvelope className="user-info-icon" />
-                  <span>Nơi làm việc: Hồ Chí Minh</span>
+                  <span>Nơi làm việc: {userData?.profile?.desired_work_location || 'No Desired Location'}</span>
                 </div>
               </div>
               <div className='user-info'>
                 <div>
                   <FaBriefcase className="user-info-icon" />
-                  <span>Mức lương: 1000$/tháng</span>
+                  <span>Mức lương: {userData?.profile?.desired_salary ? `$${userData.profile.desired_salary}/Tháng` : 'No Desired Salary'}</span>
                 </div>
               </div>
             </div>

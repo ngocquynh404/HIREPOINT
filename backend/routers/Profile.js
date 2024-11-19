@@ -14,39 +14,107 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 });
-
-// POST create a new profile
-router.post('/', authenticateToken, async (req, res) => {
+// Route tạo hồ sơ mới
+router.post('/create', authenticateToken, async (req, res) => {
   try {
-    console.log('Received data:', req.body); // Log incoming data from the client
+    const { first_name, last_name, email, phone, nationality, date_of_birth, location, job_title, job_level, experience, skills, cv_files } = req.body;
 
-    const { full_name, address, education, experience, skills, cv_file, industry } = req.body; // Include industry in the request body
+    // Kiểm tra xem người dùng đã có profile chưa
+    let profile = await Profile.findOne({ user_id: req.userId });
 
-    // Check if the profile already exists for the user
-    const existingProfile = await Profile.findOne({ user_id: req.userId });
-    if (existingProfile) {
-      console.log('Profile already exists for user:', req.userId); // Log if profile exists
-      return res.status(400).json({ message: 'Profile already exists' });
+    if (profile) {
+      return res.status(400).json({ message: 'Profile already exists' });  // Nếu profile đã tồn tại, không tạo lại
     }
 
-    // Create new profile
-    const profile = new Profile({
+    // Nếu chưa có profile, tạo mới
+    profile = new Profile({
       user_id: req.userId,
-      full_name,
-      address,
-      education,
+      first_name,
+      last_name,
+      email,
+      phone,
+      nationality,
+      date_of_birth,
+      location,
+      job_title,
+      job_level,
       experience,
       skills,
-      cv_file,
-      industry // Save industry data
+      cv_files
     });
 
     await profile.save();
-    console.log('Profile created successfully:', profile);  // Log successfully created profile
-    res.status(201).json({ message: 'Profile created successfully', profile });
+    return res.status(201).json({ message: 'Profile created successfully', profile });
   } catch (error) {
-    console.error('Error creating profile:', error);  // Log error details
-    res.status(500).json({ message: 'Server error', error });
+    console.error('Error creating profile:', error);
+    return res.status(500).json({ message: 'Error creating profile', error });
+  }
+});
+
+// Route cập nhật hồ sơ (vẫn giữ)
+router.post('/', authenticateToken, async (req, res) => {
+  try {
+    const { first_name, last_name, email, phone, nationality, date_of_birth, location, job_title, job_level, experience, skills, cv_files } = req.body;
+
+    // Kiểm tra xem người dùng đã có profile chưa
+    let profile = await Profile.findOne({ user_id: req.userId });
+
+    if (profile) {
+      // Nếu người dùng đã có profile, cập nhật thông tin
+      profile.first_name = first_name || profile.first_name;
+      profile.last_name = last_name || profile.last_name;
+      profile.email = email || profile.email;
+      profile.phone = phone || profile.phone;
+      profile.nationality = nationality || profile.nationality;
+      profile.date_of_birth = date_of_birth || profile.date_of_birth;
+      profile.location = location || profile.location;
+      profile.job_title = job_title || profile.job_title;
+      profile.job_level = job_level || profile.job_level;
+      profile.experience = experience || profile.experience;
+      profile.skills = skills || profile.skills;
+      profile.cv_files = cv_files || profile.cv_files;
+
+      await profile.save();
+      return res.status(200).json({ message: 'Profile updated successfully', profile });
+    } else {
+      // Nếu người dùng chưa có profile, tạo mới
+      profile = new Profile({
+        user_id: req.userId,
+        first_name,
+        last_name,
+        email,
+        phone,
+        nationality,
+        date_of_birth,
+        location,
+        job_title,
+        job_level,
+        experience,
+        skills,
+        cv_files
+      });
+
+      await profile.save();
+      return res.status(201).json({ message: 'Profile created successfully', profile });
+    }
+  } catch (error) {
+    console.error('Error processing profile:', error);
+    return res.status(500).json({ message: 'Error processing profile', error });
+  }
+});
+router.get('/list', authenticateToken, async (req, res) => {
+  try {
+    // Find the profile for the logged-in user using their userId
+    const profile = await Profile.findOne({ user_id: req.userId });
+
+    if (!profile) {
+      return res.status(404).json({ message: 'No profile found for this user' });
+    }
+
+    return res.status(200).json(profile);  // Return the logged-in user's profile
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    return res.status(500).json({ message: 'Error fetching profile', error });
   }
 });
 
@@ -162,23 +230,39 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 // GET full user information after login
 router.get('/me/full', authenticateToken, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).populate('profile'); // Populate nếu cần thông tin hồ sơ
+    const user = await User.findById(req.userId).populate('profile');
+    
     if (!user) {
       return res.status(404).json({ message: 'Người dùng không tồn tại' });
     }
+
     res.json({
       userId: user._id,
       username: user.username,
       email: user.email,
       role: user.role,
-      fullName: user.profile ? user.profile.full_name : null,
-      industry: user.profile ? user.profile.industry : null, // Include industry in the response
-      // Các thông tin khác từ Profile
+      avatar: user.avatar, 
+      phone: user.phone, 
+      profile: user.profile ? {
+        full_name: `${user.profile.first_name} ${user.profile.last_name}`,
+        email: user.profile.email,
+        phone: user.profile.phone,
+        nationality: user.profile.nationality,
+        date_of_birth: user.profile.date_of_birth,
+        location: user.profile.location,
+        job_title: user.profile.job_title,
+        job_level: user.profile.job_level,
+        experience: user.profile.experience,
+        skills: user.profile.skills,
+        cv_files: user.profile.cv_files,
+      } : null
     });
   } catch (err) {
     console.error('Lỗi khi lấy thông tin người dùng:', err);
     res.status(500).json({ message: 'Lỗi server', error: err.message });
   }
 });
+
+
 
 module.exports = router;
