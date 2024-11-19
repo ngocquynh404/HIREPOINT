@@ -13,6 +13,43 @@ export default function TopCompany() {
     const [error, setError] = useState(null);  // State cho thông báo lỗi
     const [successMessage, setSuccessMessage] = useState(null);  // State cho thông báo thành công
 
+    const handleFollow = async (companyId) => {
+        try {
+            const token = localStorage.getItem('token');  // Lấy token từ localStorage
+
+            if (!token) {
+                alert('Bạn chưa đăng nhập. Vui lòng đăng nhập lại.');
+                return;
+            }
+
+            const response = await axios.post(
+                'http://localhost:5000/api/followedcompanies',
+                { company_id: companyId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (response.status === 201) {
+                alert('Công ty đã được theo dõi!');
+                window.location.reload();
+                setFollowedCompanies((prevFollowedCompanies) => [
+                    ...prevFollowedCompanies,
+                    response.data.followedCompany,
+                ]);
+            }
+        } catch (err) {
+            if (err.response) {
+                const { status, data } = err.response;
+
+                if (status === 401) {
+                    alert(data.message || 'Bạn chưa đăng nhập. Vui lòng đăng nhập lại.');
+                }
+                else {
+                    alert(data.message || 'Không thể theo dõi công ty. Vui lòng thử lại.');
+                }
+            }
+        }
+    };
+
     // Hàm để tăng số lượng công ty hiển thị
     const handleLoadMore = () => {
         setVisibleCompanies(prev => prev + 9);
@@ -74,7 +111,7 @@ export default function TopCompany() {
                                             <h3 className='unique-company-name'>{company.name}</h3>
                                         </Link>
                                         <p className='unique-company-followers'>{company.industry}</p>
-                                        <button className='unique-company-follow-button'>+ Theo dõi</button>
+                                        <button onClick={() => handleFollow(company._id)} className='unique-company-follow-button'>+ Theo dõi</button>
                                     </div>
                                 </div>
 

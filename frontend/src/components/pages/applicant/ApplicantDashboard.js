@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faUserCircle,
@@ -15,14 +15,47 @@ import Profile from './Profile';
 import MyCompany from './MyCompany';
 import MyJob from './MyJob';
 import JobNotificationManager from './JobNotificationManager';
-
+import axios from 'axios';
 const ApplicantDashboard = () => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [user, setUser] = useState(null); // Lưu trữ dữ liệu người dùng
+    const [error, setError] = useState(null); // Lưu trữ lỗi (nếu có)
+    const [loading, setLoading] = useState(true);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [activeMenu, setActiveMenu] = useState('dashboard'); // Trạng thái theo dõi menu đang chọn
 
     const toggleSidebar = () => {
         setIsCollapsed(!isCollapsed);
     };
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+          try {
+            const token = localStorage.getItem('token'); // Lấy token từ localStorage
+    
+            // Kiểm tra nếu không có token
+            if (!token) {
+              setError('Token is missing, please login again.');
+              setLoading(false);
+              return;
+            }
+    
+            const response = await axios.get('http://localhost:5000/api/users/me', {
+              headers: {
+                Authorization: `Bearer ${token}`, // Gửi token trong header
+              },
+            });
+    
+            setUser(response.data); // Lưu dữ liệu người dùng
+            setLoading(false);
+          } catch (err) {
+            console.error('Error fetching user data:', err);
+            setError('Failed to fetch user data.');
+            setLoading(false);
+          }
+        };
+    
+        fetchUserProfile(); 
+      }, []);
 
     const renderContent = () => {
         switch (activeMenu) {
@@ -50,9 +83,9 @@ const ApplicantDashboard = () => {
                     {!isCollapsed && (
                         <div className="applicant-dashboard-profile">
                             <div className="applicant-dashboard-user-info">
-                                <FontAwesomeIcon icon={faUserCircle} className="applicant-dashboard-avatar-icon" />
-                                <h3 className="applicant-dashboard-name">Ma Thị Ngọc Quỳnh</h3>
-                                <p className="applicant-dashboard-role">IT Manager</p>
+                                <img src={user?.avatar} className="applicant-dashboard-avatar-icon" />
+                                <h3 className="applicant-dashboard-name">{user?.username}</h3>
+                                <p className="applicant-dashboard-role">{user?.email}</p>
                             </div>
                         </div>
                     )}

@@ -74,8 +74,8 @@ export default function ApplicantNavBar() {
                 <div className="applicant-menu">
                     <div className="applicant-info">
                         <div className='applicant-info-detail'>
-                            <h4 className="applicant-name">{user.username}</h4>
-                            <p className="applicant-email">{user.email}</p>
+                            <h4 className="applicant-name">{user?.username}</h4>
+                            <p className="applicant-email">{user?.email}</p>
                         </div>
                         <button className="applicant-update-button">Cập nhật hồ sơ</button>
                     </div>
