@@ -581,6 +581,7 @@ const Profile = () => {
                           id="lastName"
                           className="user-info-edit-input"
                           placeholder="Nhập họ"
+                          value={profile.first_name}
                         />
                       </div>
                       <div className="user-info-edit-row">
@@ -592,6 +593,7 @@ const Profile = () => {
                           id="firstName"
                           className="user-info-edit-input"
                           placeholder="Nhập tên"
+                          value={profile.last_name}
                         />
                       </div>
                     </div>
@@ -604,7 +606,7 @@ const Profile = () => {
                           {genderOptions.map((option) => (
                             <div
                               key={option.value}
-                              className={`gender-option ${selectedGender === option.value ? "selected" : ""
+                              className={`gender-option  ${profile.gender === option.value ? "selected" : ""}
                                 }`}
                               onClick={() => handleGenderSelect(option.value)}
                             >
@@ -625,6 +627,7 @@ const Profile = () => {
                           id="email"
                           className="user-info-edit-input"
                           placeholder="Nhập email"
+                          value={profile.email}
                         />
                       </div>
                     </div>
@@ -649,7 +652,7 @@ const Profile = () => {
                           <input
                             type="text"
                             placeholder="Nhập số điện thoại"
-                            value={phoneNumber}
+                            value={profile.phone}
                             onChange={(e) => setPhoneNumber(e.target.value)}
                           />
                         </div>
@@ -680,15 +683,20 @@ const Profile = () => {
                           className="nationality-select-input"
                           onClick={() => setDropdownVisible(!dropdownVisible)}
                         >
-                          {selectedNationality ? (
+                          {selectedNationality || profile.location ? (
                             <div className="selected-country">
-                              <span className="country-flag">{selectedNationality.flag}</span>
-                              <span className="country-name">{selectedNationality.name}</span>
+                              <span className="country-flag">
+                                {selectedNationality ? selectedNationality.flag : countryList.find(country => country.name === profile.location)?.flag}
+                              </span>
+                              <span className="country-name">
+                                {selectedNationality ? selectedNationality.name : profile.location}
+                              </span>
                             </div>
                           ) : (
                             "Chọn quốc tịch"
                           )}
                         </div>
+
 
                         {/* Dropdown quốc tịch */}
                         {dropdownVisible && (
@@ -734,8 +742,9 @@ const Profile = () => {
                       className="date-picker-input"
                       onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                     >
-                      {selectedDate || "Chọn ngày sinh"}
+                      {selectedDate || profile.date_of_birth ? new Date(profile.date_of_birth).toLocaleDateString() : "Chọn ngày sinh"}
                     </div>
+
 
                     {/* Lịch chọn ngày */}
                     {isCalendarOpen && (
@@ -814,6 +823,7 @@ const Profile = () => {
                     id="title"
                     className="user-info-edit-input"
                     placeholder="Nhập chức danh"
+                    value={profile.specific_address}
                   />
                 </div>
                 <div className="user-info-edit-row">
@@ -825,6 +835,7 @@ const Profile = () => {
                     id="title"
                     className="user-info-edit-input"
                     placeholder="Nhập chức danh"
+                    value={profile.job_title}
                   />
                 </div>
 
@@ -833,7 +844,7 @@ const Profile = () => {
                     Cấp bậc hiện tại <span className="user-info-edit-required">*</span>
                   </label>
                   <select id="level" className="user-info-edit-select">
-                    <option value="">Chọn cấp bậc</option>
+                    <option value={profile.job_level||''}>Chọn cấp bậc</option>
                     <option value="Trưởng phòng">Trưởng phòng</option>
                     <option value="Nhân viên">Nhân viên</option>
                     <option value="Thực tập sinh">Thực tập sinh</option>
@@ -846,7 +857,7 @@ const Profile = () => {
                       Ngành nghề hiện tại <span className="user-info-edit-required">*</span>
                     </label>
                     <select id="industry" className="user-info-edit-select">
-                      <option value="">Chọn ngành nghề</option>
+                      <option value={profile.current_industry||''}>Chọn ngành nghề</option>
                       <option value="IT">IT</option>
                       <option value="Marketing">Marketing</option>
                       <option value="Giáo dục">Giáo dục</option>
@@ -857,7 +868,7 @@ const Profile = () => {
                       Lĩnh vực hiện tại <span className="user-info-edit-required">*</span>
                     </label>
                     <select id="field" className="user-info-edit-select">
-                      <option value="">Chọn lĩnh vực công ty</option>
+                      <option value={profile.current_field||''}>Chọn lĩnh vực công ty</option>
                       <option value="Công nghệ">Công nghệ</option>
                       <option value="Giáo dục">Giáo dục</option>
                       <option value="Kinh doanh">Kinh doanh</option>
@@ -876,6 +887,7 @@ const Profile = () => {
                         id="experience"
                         className="user-info-edit-inputt"
                         placeholder="Nhập số năm kinh nghiệm"
+                        value={profile.years_of_experience}
                       />
                       <span className="user-info-edit-unit">Năm</span>
                     </div>
@@ -891,6 +903,7 @@ const Profile = () => {
                         id="salary"
                         className="user-info-edit-inputt"
                         placeholder=""
+                        value={profile.desired_salary}
                       />
                       <span className="user-info-edit-unit">USD/tháng</span>
                     </div>
@@ -911,7 +924,8 @@ const Profile = () => {
                           {breadcrumbs2.length > 0 && (
                             <button onClick={handleBack2}>&lt;</button>
                           )}
-                          <span>{breadcrumbs2.join(" / ") || "Chọn địa điểm"}</span>
+                          {/*<span>{breadcrumbs2.join(" / ") || "Chọn địa điểm"}</span>*/}
+                          <span>{profile.desired_work_location || "Chọn địa điểm"}</span>
                         </div>
                         <ul className="user-info-edit-options">
                           {Object.keys(currentLevel2).map((key) => (
@@ -938,6 +952,7 @@ const Profile = () => {
                         id="salary"
                         className="user-info-edit-inputt"
                         placeholder=""
+                        value={profile.desired_salary}
                       />
                       <span className="user-info-edit-unit">USD/tháng</span>
                     </div>
