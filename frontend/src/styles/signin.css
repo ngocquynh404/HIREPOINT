@@ -19,7 +19,7 @@
 .auth-container {
     position: relative;
     width: 850px;
-    height: 500px;
+    height: 600px;
     background-color: #fff;
     box-shadow: 25px 30px 55px #5557;
     border-radius: 13px;
@@ -149,7 +149,7 @@
     cursor: pointer;
     position: absolute;
     left: 50%;
-    top: 304px;
+    top: 352px;
     transform: translateX(-50%);
     width: 143.67px;
     height: 40px;
