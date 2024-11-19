@@ -125,8 +125,8 @@ export default function SignUp() {
                                 type="email"
                                 placeholder="Email"
                                 name="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)} // Cập nhật state
+                                value={form.email}
+                               
                                 required
                             />
                             <label className="infield-label"></label>
@@ -137,8 +137,8 @@ export default function SignUp() {
                                 type="password"
                                 placeholder="Password"
                                 name="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)} // Cập nhật state
+                                value={form.password}
+                              
                                 required
                             />
                             <label className="infield-label"></label>

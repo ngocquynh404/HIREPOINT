@@ -5,6 +5,7 @@ const Profile = require('../models/Profile');
 const User = require('../models/User');
 const authenticateToken = require('../middleware/authenticateToken');
 
+
 // GET all profiles (if needed)
 router.get('/', async (req, res) => {
   try {
@@ -135,23 +136,19 @@ router.get('/job/:userId', async (req, res) => {
 });
 
 // GET profile by ID
-router.get('/:id', async (req, res) => {
-  const { id } = req.params;
-
-  // Validate ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid profile ID' });
-  }
-
+router.get('/:user_id', authenticateToken, async (req, res) => {
   try {
-    const profile = await Profile.findById(id).populate('user_id');
+    const { user_id } = req.params;
+    const profile = await Profile.findOne({ user_id }).populate('user_id'); // Populate if needed
+
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
-    res.json(profile);
+
+    res.status(200).json(profile);
   } catch (error) {
     console.error('Error fetching profile:', error);
-    res.status(500).json({ message: 'Server error', error });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -227,42 +224,18 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// GET full user information after login
-router.get('/me/full', authenticateToken, async (req, res) => {
+router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).populate('profile');
-    
-    if (!user) {
-      return res.status(404).json({ message: 'Người dùng không tồn tại' });
-    }
+    const profile = await Profile.findOne({ user_id: req.userId });
 
-    res.json({
-      userId: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      avatar: user.avatar, 
-      phone: user.phone, 
-      profile: user.profile ? {
-        full_name: `${user.profile.first_name} ${user.profile.last_name}`,
-        email: user.profile.email,
-        phone: user.profile.phone,
-        nationality: user.profile.nationality,
-        date_of_birth: user.profile.date_of_birth,
-        location: user.profile.location,
-        job_title: user.profile.job_title,
-        job_level: user.profile.job_level,
-        experience: user.profile.experience,
-        skills: user.profile.skills,
-        cv_files: user.profile.cv_files,
-      } : null
-    });
-  } catch (err) {
-    console.error('Lỗi khi lấy thông tin người dùng:', err);
-    res.status(500).json({ message: 'Lỗi server', error: err.message });
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+    res.status(200).json(profile);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
-
-
 
 module.exports = router;

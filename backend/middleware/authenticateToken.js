@@ -18,6 +18,7 @@ const authenticateToken = (req, res, next) => {
     }
 
     req.userId = decoded.userId;  // Lưu userId vào request để sử dụng sau này
+    console.log('Authenticated user ID:', req.userId);
     next();  // Chuyển sang route handler
   });
 };

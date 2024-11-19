@@ -134,9 +134,7 @@ export default function SignIn() {
                             <input className="infield-input" type="password" placeholder="Password" value={form.password}
                                 onChange={handleChange}
                                 required />
-
                             <label className="infield-label"></label>
-
                         </div>
                         <div className="infield">
                             <input className="infield-input" type="password" name="confirmPassword" placeholder="Comfirm Password" value={form.confirmPassword}
@@ -144,11 +142,7 @@ export default function SignIn() {
                                 required />
                             <label className="infield-label"></label>
                         </div>
-                        <div className="infield">
-                            <input className="infield-input" type="password" placeholder="Confirm Password" />
-                            <label className="infield-label"></label>
-                        </div>
-                        <button className='auth-button'>Sign Up</button>
+                        <button onClick={handleSubmitSignUp}  className='auth-button'>Sign Up</button>
                     </form>
                 </div>
                 <div className="auth-form-container sign-in-container">

@@ -6,6 +6,8 @@ import { EditorState } from 'draft-js';
 import { Editor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import axios from 'axios';
+import { getId } from '../../../libs/isAuth';
+
 
 const skills = [
   "Quản lý dự án phần mềm",
@@ -129,6 +131,9 @@ const Profile = () => {
   const [selectedAddress, setSelectedAddress] = useState("");
   const [currentJobTitle, setCurrentJobTitle] = useState("");
   const [isEditBasicInfoOpen, setIsEditBasicInfoOpen] = useState(false);
+
+  const idnd = getId();
+
 
   // Hàm để mở form chỉnh sửa thông tin cơ bản
   const handleEditBasicInfoClick = () => {
@@ -422,33 +427,51 @@ const Profile = () => {
     setIsChecked(!isChecked);
   };
   ///////////////////////////////END FORM KINH NGHIỆM////////////////////////
-
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [profile, setProfile] = useState({
+    first_name: '',
+    last_name: '',
+    gender: '',
+    email: '',
+    phone: '',
+    nationality: '',
+    date_of_birth: '',
+    location: '',
+    specific_address: '',
+    job_title: '',
+    job_level: '',
+    current_industry: '',
+    current_field: '',
+    years_of_experience: '',
+    current_salary: '',
+    desired_work_location: '',
+    desired_salary: '',
+    education: '',
+    experience: [],
+    skills: [],
+    cv_files: []
+  });
+  const [loading, setLoading] = useState(true); // State để kiểm tra trạng thái loading
+  const [error, setError] = useState(null); // State để lưu lỗi (nếu có)
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('authToken'); // Get the token from localStorage
-
-        const response = await axios.get('http://localhost:5000/api/profiles/me/full', {
+        const response = await axios.get(`http://localhost:5000/api/profiles/${idnd}`, {
           headers: {
-            Authorization: `Bearer ${token}`, // Add token in headers
+            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực
           },
         });
-        console('token', token);
-        setUserData(response.data); // Update the state with the user data
-        setLoading(false); // Set loading to false
-      } catch (err) {
-        setError('Lỗi khi lấy thông tin người dùng');
-        setLoading(false); // Set loading to false on error
+        setProfile(response.data); // Gán dữ liệu profile vào state
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        setError('Failed to load profile data.');
+      } finally {
+        setLoading(false); // Dừng trạng thái loading
       }
     };
 
-    fetchUserData();
-  }, []); // Empty dependency array to run the effect only once on mount
-
+    fetchProfile();
+  }, [idnd]);
 
   return (
     <div className='my-profile'>
@@ -458,67 +481,75 @@ const Profile = () => {
         <button className="user-info-edit-btn" onClick={handleEditBasicInfoClick}>
           <FaEdit />
         </button>
+        {profile && (
+          <>
+            <div className='user-info-name-position'>
+              <div className="user-info-avatar">{<img src={''} alt="Avatar" />}</div>
 
-        <div className='user-info-name-position'>
-          <div className="user-info-avatar"></div>
-          {userData?.avatar && <img src={userData.avatar} alt="Avatar" />}
-          <h2 className="user-info-name">{userData?.profile ? `${userData.profile.first_name} ${userData.profile.last_name}` : 'No Name'}
-          </h2>
-          <p className="user-info-position">{userData?.profile ? userData.profile.job_title : 'No Job Title'}
-          </p>
-          <p className="user-info-position">{userData?.profile && userData.profile.years_of_experience
-            ? `${userData.profile.years_of_experience} years experience`
-            : 'No Experience'}
-          </p>
-        </div>
-        <div className="user-info-details">
-          <div className='user-info-1'>
-            <h3 className='user-basic-info-header'>Thông tin cơ bản</h3>
-            <div className='user-basic-info'>
-              <div className="user-info">
-                <div>
-                  <FaEnvelope className="user-info-icon" />
-                  <span>{userData?.email}</span>
-                </div>
-                <div>
-                  <FaMapMarkerAlt className="user-info-icon" />
-                  <span>{userData?.profile?.location}</span>
-                </div>
-                <div>
-                  <FaPhone className="user-info-icon" />
-                  <span>{userData?.profile?.phone}</span>
+              <h2 className="user-info-name"> {profile.first_name && profile.last_name
+                ? `${profile.first_name} ${profile.last_name}`
+                : 'No Name'}
+              </h2>
+              <p className="user-info-position">{profile.job_title ? profile.job_title : 'No Job Title'}
+              </p>
+              <p className="user-info-position">{profile.years_of_experience
+                ? `${profile.years_of_experience} years experience`
+                : 'No Experience'}
+              </p>
+            </div>
+            <div className="user-info-details">
+              <div className='user-info-1'>
+                <h3 className='user-basic-info-header'>Thông tin cơ bản</h3>
+                <div className='user-basic-info'>
+                  <div className="user-info">
+                    <div>
+                      <FaEnvelope className="user-info-icon" />
+                      <span>{profile.email || 'No Email'}</span>
+                    </div>
+                    <div>
+                      <FaMapMarkerAlt className="user-info-icon" />
+                      <span>{profile.location || 'No Location'}</span>
+                    </div>
+                    <div>
+                      <FaPhone className="user-info-icon" />
+                      <span>{profile.phone || 'No Phone'}</span>
+                    </div>
+                  </div>
+                  <div className='user-info'>
+                    <div>
+                      <FaBriefcase className="user-info-icon" />
+                      <span>{profile.job_level || 'No Job Level'}</span>
+                    </div>
+                    <div>
+                      <FaGraduationCap className="user-info-icon" />
+                      <span>{profile.education || 'No Education'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className='user-info'>
-                <div>
-                  <FaBriefcase className="user-info-icon" />
-                  <span>{userData?.profile?.job_level || 'No Job Level'}</span>
-                </div>
-                <div>
-                  <FaGraduationCap className="user-info-icon" />
-                  <span>{userData?.profile?.education || 'No Education'}</span>
+              <div className='user-info-2'>
+                <h3 className='user-basic-info-header'>Công việc mong muốn </h3>
+                <div className='user-basic-info'>
+                  <div className="user-info">
+                    <div>
+                      <FaEnvelope className="user-info-icon" />
+                      <span>Nơi làm việc: {profile.desired_work_location || 'No Desired Location'}</span>
+                    </div>
+                  </div>
+                  <div className='user-info'>
+                    <div>
+                      <FaBriefcase className="user-info-icon" />
+                      <span>Mức lương: {profile.desired_salary
+                        ? `$${profile.desired_salary}/Tháng`
+                        : 'No Desired Salary'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className='user-info-2'>
-            <h3 className='user-basic-info-header'>Công việc mong muốn </h3>
-            <div className='user-basic-info'>
-              <div className="user-info">
-                <div>
-                  <FaEnvelope className="user-info-icon" />
-                  <span>Nơi làm việc: {userData?.profile?.desired_work_location || 'No Desired Location'}</span>
-                </div>
-              </div>
-              <div className='user-info'>
-                <div>
-                  <FaBriefcase className="user-info-icon" />
-                  <span>Mức lương: {userData?.profile?.desired_salary ? `$${userData.profile.desired_salary}/Tháng` : 'No Desired Salary'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+
+          </>
+        )}
       </div>
       {/* Form chỉnh sửa thông tin cơ bản *********************************************/}
       {isEditBasicInfoOpen && (
@@ -550,6 +581,7 @@ const Profile = () => {
                           id="lastName"
                           className="user-info-edit-input"
                           placeholder="Nhập họ"
+                          value={profile.first_name}
                         />
                       </div>
                       <div className="user-info-edit-row">
@@ -561,6 +593,7 @@ const Profile = () => {
                           id="firstName"
                           className="user-info-edit-input"
                           placeholder="Nhập tên"
+                          value={profile.last_name}
                         />
                       </div>
                     </div>
@@ -573,7 +606,7 @@ const Profile = () => {
                           {genderOptions.map((option) => (
                             <div
                               key={option.value}
-                              className={`gender-option ${selectedGender === option.value ? "selected" : ""
+                              className={`gender-option  ${profile.gender === option.value ? "selected" : ""}
                                 }`}
                               onClick={() => handleGenderSelect(option.value)}
                             >
@@ -594,6 +627,7 @@ const Profile = () => {
                           id="email"
                           className="user-info-edit-input"
                           placeholder="Nhập email"
+                          value={profile.email}
                         />
                       </div>
                     </div>
@@ -618,7 +652,7 @@ const Profile = () => {
                           <input
                             type="text"
                             placeholder="Nhập số điện thoại"
-                            value={phoneNumber}
+                            value={profile.phone}
                             onChange={(e) => setPhoneNumber(e.target.value)}
                           />
                         </div>
@@ -649,15 +683,20 @@ const Profile = () => {
                           className="nationality-select-input"
                           onClick={() => setDropdownVisible(!dropdownVisible)}
                         >
-                          {selectedNationality ? (
+                          {selectedNationality || profile.location ? (
                             <div className="selected-country">
-                              <span className="country-flag">{selectedNationality.flag}</span>
-                              <span className="country-name">{selectedNationality.name}</span>
+                              <span className="country-flag">
+                                {selectedNationality ? selectedNationality.flag : countryList.find(country => country.name === profile.location)?.flag}
+                              </span>
+                              <span className="country-name">
+                                {selectedNationality ? selectedNationality.name : profile.location}
+                              </span>
                             </div>
                           ) : (
                             "Chọn quốc tịch"
                           )}
                         </div>
+
 
                         {/* Dropdown quốc tịch */}
                         {dropdownVisible && (
@@ -703,8 +742,9 @@ const Profile = () => {
                       className="date-picker-input"
                       onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                     >
-                      {selectedDate || "Chọn ngày sinh"}
+                      {selectedDate || profile.date_of_birth ? new Date(profile.date_of_birth).toLocaleDateString() : "Chọn ngày sinh"}
                     </div>
+
 
                     {/* Lịch chọn ngày */}
                     {isCalendarOpen && (
@@ -783,6 +823,7 @@ const Profile = () => {
                     id="title"
                     className="user-info-edit-input"
                     placeholder="Nhập chức danh"
+                    value={profile.specific_address}
                   />
                 </div>
                 <div className="user-info-edit-row">
@@ -794,6 +835,7 @@ const Profile = () => {
                     id="title"
                     className="user-info-edit-input"
                     placeholder="Nhập chức danh"
+                    value={profile.job_title}
                   />
                 </div>
 
@@ -802,7 +844,7 @@ const Profile = () => {
                     Cấp bậc hiện tại <span className="user-info-edit-required">*</span>
                   </label>
                   <select id="level" className="user-info-edit-select">
-                    <option value="">Chọn cấp bậc</option>
+                    <option value={profile.job_level||''}>Chọn cấp bậc</option>
                     <option value="Trưởng phòng">Trưởng phòng</option>
                     <option value="Nhân viên">Nhân viên</option>
                     <option value="Thực tập sinh">Thực tập sinh</option>
@@ -815,7 +857,7 @@ const Profile = () => {
                       Ngành nghề hiện tại <span className="user-info-edit-required">*</span>
                     </label>
                     <select id="industry" className="user-info-edit-select">
-                      <option value="">Chọn ngành nghề</option>
+                      <option value={profile.current_industry||''}>Chọn ngành nghề</option>
                       <option value="IT">IT</option>
                       <option value="Marketing">Marketing</option>
                       <option value="Giáo dục">Giáo dục</option>
@@ -826,7 +868,7 @@ const Profile = () => {
                       Lĩnh vực hiện tại <span className="user-info-edit-required">*</span>
                     </label>
                     <select id="field" className="user-info-edit-select">
-                      <option value="">Chọn lĩnh vực công ty</option>
+                      <option value={profile.current_field||''}>Chọn lĩnh vực công ty</option>
                       <option value="Công nghệ">Công nghệ</option>
                       <option value="Giáo dục">Giáo dục</option>
                       <option value="Kinh doanh">Kinh doanh</option>
@@ -845,6 +887,7 @@ const Profile = () => {
                         id="experience"
                         className="user-info-edit-inputt"
                         placeholder="Nhập số năm kinh nghiệm"
+                        value={profile.years_of_experience}
                       />
                       <span className="user-info-edit-unit">Năm</span>
                     </div>
@@ -860,6 +903,7 @@ const Profile = () => {
                         id="salary"
                         className="user-info-edit-inputt"
                         placeholder=""
+                        value={profile.desired_salary}
                       />
                       <span className="user-info-edit-unit">USD/tháng</span>
                     </div>
@@ -880,7 +924,8 @@ const Profile = () => {
                           {breadcrumbs2.length > 0 && (
                             <button onClick={handleBack2}>&lt;</button>
                           )}
-                          <span>{breadcrumbs2.join(" / ") || "Chọn địa điểm"}</span>
+                          {/*<span>{breadcrumbs2.join(" / ") || "Chọn địa điểm"}</span>*/}
+                          <span>{profile.desired_work_location || "Chọn địa điểm"}</span>
                         </div>
                         <ul className="user-info-edit-options">
                           {Object.keys(currentLevel2).map((key) => (
@@ -907,6 +952,7 @@ const Profile = () => {
                         id="salary"
                         className="user-info-edit-inputt"
                         placeholder=""
+                        value={profile.desired_salary}
                       />
                       <span className="user-info-edit-unit">USD/tháng</span>
                     </div>
