@@ -5,6 +5,7 @@ const Profile = require('../models/Profile');
 const User = require('../models/User');
 const authenticateToken = require('../middleware/authenticateToken');
 
+
 // GET all profiles (if needed)
 router.get('/', async (req, res) => {
   try {
@@ -135,23 +136,19 @@ router.get('/job/:userId', async (req, res) => {
 });
 
 // GET profile by ID
-router.get('/:id', async (req, res) => {
-  const { id } = req.params;
-
-  // Validate ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid profile ID' });
-  }
-
+router.get('/:user_id', authenticateToken, async (req, res) => {
   try {
-    const profile = await Profile.findById(id).populate('user_id');
+    const { user_id } = req.params;
+    const profile = await Profile.findOne({ user_id }).populate('user_id'); // Populate if needed
+
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
-    res.json(profile);
+
+    res.status(200).json(profile);
   } catch (error) {
     console.error('Error fetching profile:', error);
-    res.status(500).json({ message: 'Server error', error });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -227,18 +224,16 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-router.get('/me', authenticateToken, async (req, res) => {
+router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    const userId = req.userId;  // Make sure req.userId exists and is valid
-    const profile = await Profile.findOne({ user_id: mongoose.Types.ObjectId(userId) });
+    const profile = await Profile.findOne({ user_id: req.userId });
 
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
-
     res.status(200).json(profile);
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 });

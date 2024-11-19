@@ -6,6 +6,8 @@ import { EditorState } from 'draft-js';
 import { Editor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import axios from 'axios';
+import { getId } from '../../../libs/isAuth';
+
 
 const skills = [
   "Quản lý dự án phần mềm",
@@ -129,6 +131,9 @@ const Profile = () => {
   const [selectedAddress, setSelectedAddress] = useState("");
   const [currentJobTitle, setCurrentJobTitle] = useState("");
   const [isEditBasicInfoOpen, setIsEditBasicInfoOpen] = useState(false);
+
+  const idnd = getId();
+
 
   // Hàm để mở form chỉnh sửa thông tin cơ bản
   const handleEditBasicInfoClick = () => {
@@ -422,35 +427,52 @@ const Profile = () => {
     setIsChecked(!isChecked);
   };
   ///////////////////////////////END FORM KINH NGHIỆM////////////////////////
-  const [profiles, setProfiles] = useState([]);
-  const [currentUserProfile, setCurrentUserProfile] = useState(null); // State to store the current user's profile
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // State for error handling
+  const [profile, setProfile] = useState({
+    first_name: '',
+    last_name: '',
+    gender: '',
+    email: '',
+    phone: '',
+    nationality: '',
+    date_of_birth: '',
+    location: '',
+    specific_address: '',
+    job_title: '',
+    job_level: '',
+    current_industry: '',
+    current_field: '',
+    years_of_experience: '',
+    current_salary: '',
+    desired_work_location: '',
+    desired_salary: '',
+    education: '',
+    experience: [],
+    skills: [],
+    cv_files: []
+  });
+  const [loading, setLoading] = useState(true); // State để kiểm tra trạng thái loading
+  const [error, setError] = useState(null); // State để lưu lỗi (nếu có)
+
   useEffect(() => {
-    const token = localStorage.getItem('token');
-  
-    if (!token) {
-      setError('No token found!');
-      setLoading(false);
-      return;
-    }
-  
-    const fetchProfiles = async () => {
+    const fetchProfile = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/profiles/list', {
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await axios.get(`http://localhost:5000/api/profiles/${idnd}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực
+          },
         });
-        setProfiles(Array.isArray(response.data) ? response.data : []);
+        setProfile(response.data); // Gán dữ liệu profile vào state
       } catch (error) {
-        setError('Error fetching profiles');
+        console.error('Error fetching profile:', error);
+        setError('Failed to load profile data.');
       } finally {
-        setLoading(false); // Make sure loading is set to false after the fetch operation
+        setLoading(false); // Dừng trạng thái loading
       }
     };
-  
-    fetchProfiles();
-  }, []);
-  
+
+    fetchProfile();
+  }, [idnd]);
+
   return (
     <div className='my-profile'>
       {/* Form thông tin cơ bản *********************************************/}
@@ -459,26 +481,20 @@ const Profile = () => {
         <button className="user-info-edit-btn" onClick={handleEditBasicInfoClick}>
           <FaEdit />
         </button>
-        {loading ? (
-        <p>Loading profiles...</p>
-      ) : error ? (
-        <p>{error}</p>
-      ) : profiles.length > 0 ? (
-        profiles.map((profile) => (
-          <div key={profile._id}>
+        {profile && (
+          <>
             <div className='user-info-name-position'>
+              <div className="user-info-avatar">{<img src={''} alt="Avatar" />}</div>
 
-              <div className="user-info-avatar"></div>
-              {<img src={''} alt="Avatar" />}
               <h2 className="user-info-name"> {profile.first_name && profile.last_name
-                    ? `${profile.first_name} ${profile.last_name}`
-                    : 'No Name'}
+                ? `${profile.first_name} ${profile.last_name}`
+                : 'No Name'}
               </h2>
               <p className="user-info-position">{profile.job_title ? profile.job_title : 'No Job Title'}
               </p>
               <p className="user-info-position">{profile.years_of_experience
-                    ? `${profile.years_of_experience} years experience`
-                    : 'No Experience'}
+                ? `${profile.years_of_experience} years experience`
+                : 'No Experience'}
               </p>
             </div>
             <div className="user-info-details">
@@ -524,18 +540,16 @@ const Profile = () => {
                     <div>
                       <FaBriefcase className="user-info-icon" />
                       <span>Mức lương: {profile.desired_salary
-                            ? `$${profile.desired_salary}/Tháng`
-                            : 'No Desired Salary'}</span>
+                        ? `$${profile.desired_salary}/Tháng`
+                        : 'No Desired Salary'}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))
-      ) : (
-        <p>No profiles found.</p>
-      )}
+
+          </>
+        )}
       </div>
       {/* Form chỉnh sửa thông tin cơ bản *********************************************/}
       {isEditBasicInfoOpen && (
