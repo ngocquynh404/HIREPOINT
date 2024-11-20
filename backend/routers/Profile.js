@@ -52,16 +52,24 @@ router.post('/create', authenticateToken, async (req, res) => {
   }
 });
 
-// Route cập nhật hồ sơ (vẫn giữ)
-router.post('/', authenticateToken, async (req, res) => {
-  try {
-    const { first_name, last_name, email, phone, nationality, date_of_birth, location, job_title, job_level, experience, skills, cv_files } = req.body;
+router.post('/profile', async (req, res) => {
+  const { user_id, first_name, last_name, email, phone,
+    nationality, date_of_birth, location, specific_address, job_title,
+    job_level, current_industry, current_field, years_of_experience, 
+    current_salary, desired_work_location, desired_salary, education,
+    experience, skills, cv_files } = req.body;
 
-    // Kiểm tra xem người dùng đã có profile chưa
-    let profile = await Profile.findOne({ user_id: req.userId });
+  // Kiểm tra các trường bắt buộc có bị thiếu không
+  if (!user_id || !first_name || !last_name || !email || !phone) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  try {
+    // Tìm profile của người dùng
+    let profile = await Profile.findOne({ user_id });
 
     if (profile) {
-      // Nếu người dùng đã có profile, cập nhật thông tin
+      // Nếu đã có profile, cập nhật thông tin
       profile.first_name = first_name || profile.first_name;
       profile.last_name = last_name || profile.last_name;
       profile.email = email || profile.email;
@@ -69,18 +77,26 @@ router.post('/', authenticateToken, async (req, res) => {
       profile.nationality = nationality || profile.nationality;
       profile.date_of_birth = date_of_birth || profile.date_of_birth;
       profile.location = location || profile.location;
+      profile.specific_address = specific_address || profile.specific_address;
       profile.job_title = job_title || profile.job_title;
       profile.job_level = job_level || profile.job_level;
-      profile.experience = experience || profile.experience;
-      profile.skills = skills || profile.skills;
+      profile.current_industry = current_industry || profile.current_industry;
+      profile.current_field = current_field || profile.current_field;
+      profile.years_of_experience = years_of_experience || profile.years_of_experience;
+      profile.current_salary = current_salary || profile.current_salary;
+      profile.desired_work_location = desired_work_location || profile.desired_work_location;
+      profile.desired_salary = desired_salary || profile.desired_salary;
+      profile.education = education || profile.education;
+      profile.experience = experience && experience.length > 0 ? experience : profile.experience;
+      profile.skills = skills && skills.length > 0 ? skills : profile.skills;
       profile.cv_files = cv_files || profile.cv_files;
 
       await profile.save();
-      return res.status(200).json({ message: 'Profile updated successfully', profile });
+      return res.status(200).json({ success: true, message: 'Profile updated successfully', profile });
     } else {
-      // Nếu người dùng chưa có profile, tạo mới
+      // Nếu chưa có profile, tạo mới
       profile = new Profile({
-        user_id: req.userId,
+        user_id,
         first_name,
         last_name,
         email,
@@ -88,21 +104,35 @@ router.post('/', authenticateToken, async (req, res) => {
         nationality,
         date_of_birth,
         location,
+        specific_address,
         job_title,
         job_level,
-        experience,
-        skills,
+        current_industry,
+        current_field,
+        years_of_experience,
+        current_salary,
+        desired_work_location,
+        desired_salary,
+        education,
+        experience: experience && experience.length > 0 ? experience : [],
+        skills: skills && skills.length > 0 ? skills : [],
         cv_files
       });
 
       await profile.save();
-      return res.status(201).json({ message: 'Profile created successfully', profile });
+      return res.status(201).json({ success: true, message: 'Profile created successfully', profile });
     }
-  } catch (error) {
-    console.error('Error processing profile:', error);
-    return res.status(500).json({ message: 'Error processing profile', error });
+  } catch (err) {
+    console.error('Error occurred:', err.message); // Log chi tiết lỗi
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ success: false, message: 'Validation error', details: err.errors });
+    }
+    return res.status(500).json({ success: false, message: 'Server error', error: err.message });
   }
 });
+
+
+
 router.get('/list', authenticateToken, async (req, res) => {
   try {
     // Find the profile for the logged-in user using their userId
