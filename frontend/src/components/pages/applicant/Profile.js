@@ -210,6 +210,10 @@ const Profile = () => {
       setSelectedValue2([...breadcrumbs2, key].join(" / ")); // Lưu giá trị đã chọn
       setIsMenuOpen2(false); // Đóng menu
     }
+    /*setProfile((prevProfile) => ({
+      ...prevProfile,
+      desired_work_location: location, 
+    }));*/
   };
 
   const handleBack2 = () => {
@@ -233,7 +237,13 @@ const Profile = () => {
   // Xử lý khi chọn quốc gia
   const handleCountrySelect = (country) => {
     setSelectedCountry(country);
-    setIsDropdownOpen(false); // Đóng dropdown sau khi chọn
+    setIsDropdownOpen(false);
+    setSelectedNationality(country); // Cập nhật quốc gia đã chọn
+    setProfile((prevProfile) => ({
+      ...prevProfile,
+      location: country.name, // Lưu quốc gia vào profile
+    }));
+    setDropdownVisible(false);
   };
 
   const [selectedDate, setSelectedDate] = useState(""); // Ngày được chọn
@@ -261,12 +271,6 @@ const Profile = () => {
     setCurrentMonth(newMonth);
   };
 
-  // Xử lý khi chọn ngày
-  const handleDateSelect = (date) => {
-    const formattedDate = date.toISOString().split("T")[0]; // Định dạng YYYY-MM-DD
-    setSelectedDate(formattedDate);
-    setIsCalendarOpen(false); // Đóng lịch
-  };
 
   const [selectedGender, setSelectedGender] = useState(""); // Giới tính được chọn
 
@@ -280,6 +284,10 @@ const Profile = () => {
   // Xử lý khi chọn giới tính
   const handleGenderSelect = (value) => {
     setSelectedGender(value);
+    setProfile((prevProfile) => ({
+      ...prevProfile,
+      gender: selectedGender, // Cập nhật giá trị gender
+    }));
   };
 
   const [selectedNationality, setSelectedNationality] = useState(null); // Quốc tịch được chọn
@@ -339,12 +347,7 @@ const Profile = () => {
     setEditorState(EditorState.createEmpty()); // Reset nội dung editor
   };
 
-  // Hàm xử lý khi lưu
-  const handleSave = () => {
-    // Logic lưu trữ nội dung editorState (ví dụ: gửi lên API hoặc lưu localStorage)
-    console.log("Lưu nội dung:", editorState.getCurrentContent().getPlainText());
-    setIsEditJobGoalOpen(false);
-  };
+
   ///////////////////////////////END FORM MỤC TIÊU NGHỀ NGHIỆP////////////////////////
 
 
@@ -413,6 +416,13 @@ const Profile = () => {
     }); // Reset các trường input
   };
 
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
+    // Cập nhật ngày sinh trong profile
+    setProfile({ ...profile, date_of_birth: date.toISOString() }); // Lưu ngày sinh dưới dạng ISO
+  };
+
+
   // Hàm xử lý thay đổi input
   const handleInputExpChange = (e) => {
     const { id, value } = e.target;
@@ -421,12 +431,11 @@ const Profile = () => {
       [id]: value,
     }));
   };
-
-  // Hàm xử lý checkbox
-  const handleChange = () => {
-    setIsChecked(!isChecked);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProfile({ ...profile, [name]: value });
   };
-  ///////////////////////////////END FORM KINH NGHIỆM////////////////////////
+
   const [profile, setProfile] = useState({
     first_name: '',
     last_name: '',
@@ -450,8 +459,52 @@ const Profile = () => {
     skills: [],
     cv_files: []
   });
+
   const [loading, setLoading] = useState(true); // State để kiểm tra trạng thái loading
   const [error, setError] = useState(null); // State để lưu lỗi (nếu có)
+
+
+  const handleSave = async () => {
+    try {
+      const idnd = getId(); // Lấy user ID từ hàm getId
+      const data = { ...profile, user_id: idnd }; // Gắn user ID vào profile
+      const response = await axios.post('http://localhost:5000/api/profiles/profile', data, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực
+        },
+      });
+  
+      console.log('data', data);
+  
+      // Kiểm tra phản hồi từ server
+      if (response.data.success) {
+        alert('Profile saved successfully!');
+      } else {
+        alert(`Failed to save profile: ${response.data.message}`);
+      }
+    } catch (error) {
+      if (error.response) {
+        // Lỗi từ server
+        console.error('Error response from server:', error.response.data);
+        alert(`An error occurred: ${error.response.data.message || 'Unknown error'}`);
+      } else if (error.request) {
+        // Không có phản hồi từ server
+        console.error('Error request:', error.request);
+        alert('No response from server. Please check your connection or server status.');
+      } else {
+        // Lỗi khác
+        console.error('Error message:', error.message);
+        alert(`An error occurred: ${error.message}`);
+      }
+    }
+  };  
+
+  // Hàm xử lý checkbox
+  const handleChange = () => {
+    setIsChecked(!isChecked);
+  };
+  ///////////////////////////////END FORM KINH NGHIỆM////////////////////////
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -579,9 +632,11 @@ const Profile = () => {
                         <input
                           type="text"
                           id="lastName"
+                          name="first_name"
                           className="user-info-edit-input"
                           placeholder="Nhập họ"
                           value={profile.first_name}
+                          onChange={handleInputChange}
                         />
                       </div>
                       <div className="user-info-edit-row">
@@ -591,9 +646,11 @@ const Profile = () => {
                         <input
                           type="text"
                           id="firstName"
+                          name="last_name"
                           className="user-info-edit-input"
                           placeholder="Nhập tên"
                           value={profile.last_name}
+                          onChange={handleInputChange}
                         />
                       </div>
                     </div>
@@ -625,9 +682,11 @@ const Profile = () => {
                         <input
                           type="email"
                           id="email"
+                          name="email"
                           className="user-info-edit-input"
                           placeholder="Nhập email"
                           value={profile.email}
+                          onChange={handleInputChange}
                         />
                       </div>
                     </div>
@@ -653,7 +712,8 @@ const Profile = () => {
                             type="text"
                             placeholder="Nhập số điện thoại"
                             value={profile.phone}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            name="phone"
+                            onChange={handleInputChange}
                           />
                         </div>
 
@@ -734,44 +794,39 @@ const Profile = () => {
                 </div>
                 <div className="user-info-edit-col-bigger">
                   <div className="date-picker-container">
-                    <label htmlFor="email" className="user-info-edit-label">
+                    <label htmlFor="date_of_birth" className="user-info-edit-label">
                       Ngày sinh <span className="user-info-edit-required">*</span>
                     </label>
+
                     {/* Ô nhập ngày sinh */}
                     <div
                       className="date-picker-input"
+                      name="date_of_birth"
                       onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                     >
-                      {selectedDate || profile.date_of_birth ? new Date(profile.date_of_birth).toLocaleDateString() : "Chọn ngày sinh"}
+                      {selectedDate || (profile.date_of_birth && !isNaN(new Date(profile.date_of_birth).getTime()))
+                        ? new Date(profile.date_of_birth).toLocaleDateString()
+                        : "Chọn ngày sinh"}
                     </div>
-
 
                     {/* Lịch chọn ngày */}
                     {isCalendarOpen && (
                       <div className="calendar-dropdown">
-                        {/* Header lịch */}
                         <div className="calendar-header">
                           <button onClick={() => changeMonth(-1)}>&lt;</button>
                           <span>
-                            {currentMonth.toLocaleString("default", {
-                              month: "long",
-                              year: "numeric"
-                            })}
+                            {currentMonth.toLocaleString("default", { month: "long", year: "numeric" })}
                           </span>
                           <button onClick={() => changeMonth(1)}>&gt;</button>
                         </div>
 
-                        {/* Danh sách ngày */}
                         <div className="calendar-grid">
                           {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
                             <div key={day} className="calendar-day-name">
                               {day}
                             </div>
                           ))}
-                          {getDaysInMonth(
-                            currentMonth.getMonth(),
-                            currentMonth.getFullYear()
-                          ).map((date) => (
+                          {getDaysInMonth(currentMonth.getMonth(), currentMonth.getFullYear()).map((date) => (
                             <div
                               key={date}
                               className="calendar-day"
@@ -784,6 +839,7 @@ const Profile = () => {
                       </div>
                     )}
                   </div>
+
                   <div className="user-info-edit-selectbox">
                     <label htmlFor="address-selected" className="user-info-edit-label">
                       Địa chỉ <span className="user-info-edit-required">*</span>
@@ -821,9 +877,11 @@ const Profile = () => {
                   <input
                     type="text"
                     id="title"
+                    name="specific_address"
                     className="user-info-edit-input"
-                    placeholder="Nhập chức danh"
+                    placeholder="Nhập địa chỉ cụ thể"
                     value={profile.specific_address}
+                    onChange={handleInputChange}
                   />
                 </div>
                 <div className="user-info-edit-row">
@@ -832,10 +890,12 @@ const Profile = () => {
                   </label>
                   <input
                     type="text"
-                    id="title"
+                    id="job_title"
+                    name="job_title"
                     className="user-info-edit-input"
                     placeholder="Nhập chức danh"
                     value={profile.job_title}
+                    onChange={handleInputChange}
                   />
                 </div>
 
@@ -843,8 +903,12 @@ const Profile = () => {
                   <label htmlFor="level" className="user-info-edit-label">
                     Cấp bậc hiện tại <span className="user-info-edit-required">*</span>
                   </label>
-                  <select id="level" className="user-info-edit-select">
-                    <option value={profile.job_level||''}>Chọn cấp bậc</option>
+                  <select id="level"
+                    name="job_level"
+                    value={profile.job_level || ''}
+                    onChange={handleInputChange}
+                    className="user-info-edit-select">
+                    <option >Chọn cấp bậc</option>
                     <option value="Trưởng phòng">Trưởng phòng</option>
                     <option value="Nhân viên">Nhân viên</option>
                     <option value="Thực tập sinh">Thực tập sinh</option>
@@ -856,8 +920,12 @@ const Profile = () => {
                     <label htmlFor="industry" className="user-info-edit-label">
                       Ngành nghề hiện tại <span className="user-info-edit-required">*</span>
                     </label>
-                    <select id="industry" className="user-info-edit-select">
-                      <option value={profile.current_industry||''}>Chọn ngành nghề</option>
+                    <select id="industry"
+                      name="current_industry"
+                      value={profile.current_industry || ''}
+                      onChange={handleInputChange}
+                      className="user-info-edit-select">
+                      <option >Chọn ngành nghề</option>
                       <option value="IT">IT</option>
                       <option value="Marketing">Marketing</option>
                       <option value="Giáo dục">Giáo dục</option>
@@ -867,8 +935,12 @@ const Profile = () => {
                     <label htmlFor="field" className="user-info-edit-label">
                       Lĩnh vực hiện tại <span className="user-info-edit-required">*</span>
                     </label>
-                    <select id="field" className="user-info-edit-select">
-                      <option value={profile.current_field||''}>Chọn lĩnh vực công ty</option>
+                    <select id="field"
+                      value={profile.current_field || ''}
+                      name="current_field"
+                      onChange={handleInputChange}
+                      className="user-info-edit-select">
+                      <option >Chọn lĩnh vực công ty</option>
                       <option value="Công nghệ">Công nghệ</option>
                       <option value="Giáo dục">Giáo dục</option>
                       <option value="Kinh doanh">Kinh doanh</option>
@@ -885,9 +957,11 @@ const Profile = () => {
                       <input
                         type="number"
                         id="experience"
+                        name="years_of_experience"
                         className="user-info-edit-inputt"
                         placeholder="Nhập số năm kinh nghiệm"
                         value={profile.years_of_experience}
+                        onChange={handleInputChange}
                       />
                       <span className="user-info-edit-unit">Năm</span>
                     </div>
@@ -900,10 +974,12 @@ const Profile = () => {
                     <div className="user-info-edit-input-group">
                       <input
                         type="text"
-                        id="salary"
+                        id="current_salary"
+                        name="current_salary"
                         className="user-info-edit-inputt"
                         placeholder=""
-                        value={profile.desired_salary}
+                        value={profile.current_salary}
+                        onChange={handleInputChange}
                       />
                       <span className="user-info-edit-unit">USD/tháng</span>
                     </div>
@@ -949,10 +1025,12 @@ const Profile = () => {
                     <div className="user-info-edit-input-group">
                       <input
                         type="text"
-                        id="salary"
+                        id="desired_salary"
+                        name="desired_salary"
                         className="user-info-edit-inputt"
                         placeholder=""
                         value={profile.desired_salary}
+                        onChange={handleInputChange}
                       />
                       <span className="user-info-edit-unit">USD/tháng</span>
                     </div>
@@ -963,7 +1041,7 @@ const Profile = () => {
 
               {/* Footer (Save/Cancel) */}
               <div className="user-info-edit-button-row">
-                <button className="user-info-edit-save-btn" type="submit">
+                <button onClick={handleSave} className="user-info-edit-save-btn" type="submit">
                   Lưu
                 </button>
                 <button className="user-info-edit-cancel-btn" type="button" onClick={handleCloseBasicInfoEdit}>

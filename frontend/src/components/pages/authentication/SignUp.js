@@ -24,6 +24,7 @@ export default function SignUp() {
     const handleSignUpClick = () => {
         navigate('/sign-up'); // Chuyển hướng đến trang sign-in
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
     
@@ -63,6 +64,7 @@ export default function SignUp() {
             alert("Đăng ký thất bại!");
         }
     };
+    
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setForm({
