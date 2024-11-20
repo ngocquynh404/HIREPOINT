@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import apiList from '../../../libs/apiList'
 import { login } from '../../../libs/isAuth';
 
-export default function RecruiterSignIn() {
-    const [isRightPanelActive, setIsRightPanelActive] = useState(false); // Đặt mặc định là true để Sign Up hiển thị trước
+export default function RecruiterSignUp() {
+    const [isRightPanelActive, setIsRightPanelActive] = useState(true); // Đặt mặc định là true để Sign Up hiển thị trước
     const navigate = useNavigate();
 
     const handleOverlayClick = () => {

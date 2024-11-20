@@ -9,6 +9,7 @@ import ApplicantNavBar from "../pages/applicant/ApplicantNavBar";
 import RecruiterNavbar from "../pages/recruiter/RecruiterNavbar";
 import { isAuth, userType } from "../../libs/isAuth";
 import '../../styles/navbar.css';
+import RecruiterHomePage from "../pages/recruiter/RecruiterHomePage";
 
 export default function Navbar() {
   const linkUrl = useLocation();
@@ -37,7 +38,6 @@ export default function Navbar() {
                     </>
                   ) : (
                     <>
-                      <Link className="nav-link" to="/recruiter-sign-in">Nhà tuyển dụng</Link>
                       <Jobs className="nav-link">Jobs</Jobs>
                       <Link className="nav-link" to="/companies">Companies</Link>
                       <Link className="nav-link" to="/leaderboard">Leaderboard</Link>
@@ -80,7 +80,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link className="nav-link" to="/recruiter-sign-in">Nhà tuyển dụng</Link>
+                  <Link className="nav-link" to="/recruiter-homepage">Nhà tuyển dụng</Link>
                   <Jobs className="nav-link">Jobs</Jobs>
                   <Link className="nav-link" to="/companies">Companies</Link>
                   <Link className="nav-link" to="/leaderboard">Leaderboard</Link>
