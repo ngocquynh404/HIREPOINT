@@ -10,6 +10,7 @@ const Profile = require('./routers/Profile');
 const Company = require('./routers/Company');
 const Notification = require('./routers/Notification');
 const Application = require('./routers/Application');
+const Recruiter = require('./routers/Recruiter');
 const SavedJob = require('./routers/SavedJob');
 const Job = require('./routers/Job');
 const FollowedCompany = require('./routers/FollowedCompany');
@@ -27,7 +28,6 @@ const logoutRouter = require('./routers/Logout');
 const AvailableTime = require('./routers/AvailableTime');
 // Import middleware authenticateSocket
 const authenticateSocket = require('./middleware/authenticateSocket');
-
 
 // Cấu hình cloudinary
 const cloudinary = require('cloudinary').v2;
@@ -79,6 +79,7 @@ app.use('/api/profiles', Profile);
 app.use('/api/companies', Company);
 app.use('/api/notifications', Notification);
 app.use('/api/applications', Application);
+app.use('/api/recruiters', Recruiter);
 app.use('/api/savedjobs', SavedJob);
 app.use('/api/jobs', Job);
 app.use('/api/followedcompanies', FollowedCompany);

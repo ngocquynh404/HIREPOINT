@@ -470,7 +470,7 @@ const Profile = () => {
       const data = { ...profile, user_id: idnd }; // Gắn user ID vào profile
       const response = await axios.post('http://localhost:5000/api/profiles/profile', data, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực 
         },
       });
   

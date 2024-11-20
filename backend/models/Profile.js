@@ -5,7 +5,7 @@ const ProfileSchema = new mongoose.Schema({
   first_name: { type: String, required: true },
   last_name: { type: String, required: true },
   gender: { type: String },
-  email: { type: String, required: true },
+  email: { type: String, required: true }, 
   phone: { type: String },
   nationality: { type: String },
   date_of_birth: { type: Date },

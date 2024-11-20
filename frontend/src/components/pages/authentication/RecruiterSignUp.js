@@ -1,12 +1,22 @@
 import '../../../styles/signin.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiList from '../../../libs/apiList'
-import { login } from '../../../libs/isAuth';
 
 export default function RecruiterSignUp() {
     const [isRightPanelActive, setIsRightPanelActive] = useState(true); // Đặt mặc định là true để Sign Up hiển thị trước
     const navigate = useNavigate();
+    const [form, setForm] = useState({
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        first_name: '',
+        last_name: '',
+        phone: '',
+        company_name: '',
+        industry: '',
+        location: '',
+    });
 
     const handleOverlayClick = () => {
         setIsRightPanelActive(!isRightPanelActive);
@@ -20,45 +30,63 @@ export default function RecruiterSignUp() {
         navigate('/recruiter-sign-up'); // Chuyển hướng đến trang sign-in
     };
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        console.log("Form data:", form); // Debug toàn bộ dữ liệu form
+
+
+        // Kiểm tra nếu mật khẩu và xác nhận mật khẩu khớp
+        if (form.password !== form.confirmPassword) {
+            alert("Mật khẩu không khớp!");
+            return;
+        }
+
         try {
-            const response = await fetch(apiList.login, {
+            const response = await fetch('http://localhost:5000/api/recruiters/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({
+                    username: form.username,
+                    password: form.password,
+                    email: form.email,
+                    phone: form.phone,
+                    first_name: form.first_name,
+                    last_name: form.last_name,
+                    company_name: form.company_name,
+                    industry: form.industry,
+                    location: form.location
+                }),
             });
 
             const data = await response.json();
 
-            if (response.ok) {
-                login(data.token, data.role, data.userId);
-
-                if (data.role === 'admin') {
-                    navigate('/');
-                } else if (data.role === 'recruiter') {
-                    navigate('/recruiter-page');
-                } else {
-                    navigate('/applicant-page');
-                }
+            if (!response.ok) {
+                alert(data.message || "Đăng ký thất bại!");
             } else {
-                setError(data.message); // Hiển thị thông báo lỗi
+                alert(data.message);
+                navigate('/recruiter-sign-in');
             }
-        } catch (err) {
-            setError('Đăng nhập thất bại. Vui lòng thử lại.');
-            console.error(err);
+        } catch (error) {
+            console.error("Đã xảy ra lỗi khi đăng ký:", error);
+//            alert("Đăng ký thất bại!");
         }
     };
 
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setForm({
+            ...form,
+            [name]: type === 'checkbox' ? checked : value,
+        });
+    };
+    
+
     return (
         <div className='auth-body'>
-            <div className={`auth-container ${isRightPanelActive ? 'right-panel-active' : ''}`} id="container" style={{ height: "700px" }}>
+            <div className={`auth-container ${isRightPanelActive ? 'right-panel-active' : ''}`} id="container" style={{ height: "900px" }}>
                 <div className="auth-form-container sign-up-container">
                     <form className='auth-form' action="#">
                         <h1 className='auth-form-header'>Create Account</h1>
@@ -69,38 +97,66 @@ export default function RecruiterSignUp() {
                         </div>
                         <span className='auth-form-span'>or use your email for registration</span>
                         <div className="infield">
-                            <input className="infield-input" type="text" placeholder="Username" />
+                            <input className="infield-input" type="text" name='username' value={form.username} placeholder="Username"
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="email" placeholder="Email" name="email" />
+                            <input className="infield-input" type="email" name='email' value={form.email} placeholder="Email"
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="password" placeholder="Password" />
+                            <input className="infield-input" type="password" name='password' value={form.password} placeholder="Password"
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="password" placeholder="Confirm Password" />
+                            <input className="infield-input" type="password" name='confirmPassword' value={form.confirmPassword} placeholder="Confirm Password"
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="text" placeholder="Phone Number" />
+                            <input className="infield-input" type="text" name='first_name' value={form.first_name} placeholder="First Name"
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="password" placeholder="Company Name" />
+                            <input className="infield-input" type="text" name='last_name' value={form.last_name} placeholder="Last Name"
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="password" placeholder="Major" />
+                            <input className="infield-input" type="text" name='phone' value={form.phone} placeholder="Phone Number"
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="password" placeholder="Address" />
+                            <input className="infield-input" type="text" name='company_name' value={form.company_name} placeholder="Company Name"
+                                onChange={handleChange}
+                                required />
                             <label className="infield-label"></label>
                         </div>
-                        <button className='auth-button'>Sign Up</button>
+                        <div className="infield">
+                            <input className="infield-input" type="text" name='industry' value={form.industry} placeholder="Major"
+                                onChange={handleChange}
+                                required />
+                            <label className="infield-label"></label>
+                        </div>
+                        <div className="infield">
+                            <input className="infield-input" type="text" name='location' value={form.location} placeholder="Location"
+                                onChange={handleChange}
+                                required />
+                            <label className="infield-label"></label>
+                        </div>
+                        <button onClick={handleSubmit} className='auth-button'>Sign Up</button>
                     </form>
                 </div>
                 <div className="auth-form-container sign-in-container">
@@ -118,8 +174,7 @@ export default function RecruiterSignUp() {
                                 type="email"
                                 placeholder="Email"
                                 name="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)} // Cập nhật state
+                                value={form.email}
                                 required
                             />
                             <label className="infield-label"></label>
@@ -130,8 +185,7 @@ export default function RecruiterSignUp() {
                                 type="password"
                                 placeholder="Password"
                                 name="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)} // Cập nhật state
+                                value={form.password}
                                 required
                             />
                             <label className="infield-label"></label>
@@ -161,7 +215,7 @@ export default function RecruiterSignUp() {
                             </button>
                         </div>
                     </div>
-                    <button id="overlayBtn" style={{ top: "402px" }} onClick={handleOverlayClick} className="btnScaled"></button>
+                    <button id="overlayBtn" style={{ top: "502px" }} onClick={handleOverlayClick} className="btnScaled"></button>
                 </div>
             </div>
         </div>
