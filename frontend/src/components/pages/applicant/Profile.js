@@ -298,6 +298,73 @@ const Profile = () => {
   const filteredCountries = countryList.filter((country) =>
     country.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProfile({ ...profile, [name]: value });
+  };
+
+  const [profile, setProfile] = useState({
+    first_name: '',
+    last_name: '',
+    gender: '',
+    email: '',
+    phone: '',
+    nationality: '',
+    date_of_birth: '',
+    location: '',
+    specific_address: '',
+    job_title: '',
+    job_level: '',
+    current_industry: '',
+    current_field: '',
+    years_of_experience: '',
+    current_salary: '',
+    desired_work_location: '',
+    desired_salary: '',
+    education: '',
+    experience: [],
+    skills: [],
+    cv_files: []
+  });
+
+  const [loading, setLoading] = useState(true); // State để kiểm tra trạng thái loading
+  const [error, setError] = useState(null); // State để lưu lỗi (nếu có)
+
+
+  const handleSave = async () => {
+    try {
+      const idnd = getId(); // Lấy user ID từ hàm getId
+      const data = { ...profile, user_id: idnd }; // Gắn user ID vào profile
+      const response = await axios.post('http://localhost:5000/api/profiles/profile', data, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực
+        },
+      });
+  
+      console.log('data', data);
+  
+      // Kiểm tra phản hồi từ server
+      if (response.data.success) {
+        alert('Profile saved successfully!');
+      } else {
+        alert(`Failed to save profile: ${response.data.message}`);
+      }
+    } catch (error) {
+      if (error.response) {
+        // Lỗi từ server
+        console.error('Error response from server:', error.response.data);
+        alert(`An error occurred: ${error.response.data.message || 'Unknown error'}`);
+      } else if (error.request) {
+        // Không có phản hồi từ server
+        console.error('Error request:', error.request);
+        alert('No response from server. Please check your connection or server status.');
+      } else {
+        // Lỗi khác
+        console.error('Error message:', error.message);
+        alert(`An error occurred: ${error.message}`);
+      }
+    }
+  };  
   ///////////////////////////////END FORM THÔNG TIN CƠ BẢN////////////////////////
 
 
@@ -329,6 +396,60 @@ const Profile = () => {
     setEndMonth(""); // Reset "Đến tháng"
     setEditorState(EditorState.createEmpty()); // Reset trình chỉnh sửa thành tựu
   };
+  const [academic, setAcademic] = useState({
+    industry: '',
+    school_name: '',
+    degree: '',
+    start_date: '',
+    end_date: '',
+    achievements: '', // Đây là trường sẽ nhập thành tựu từ Editor
+  });
+  const handleInputChangeAcademic = (e) => {
+    const { name, value } = e.target;
+    setAcademic({ ...academic, [name]: value });
+  };
+  /*const getAchievementsText = () => {
+    const currentContent = editorState.getCurrentContent();
+    return draftToHtml(convertToRaw(currentContent)); // Chuyển đổi EditorState thành HTML
+  };
+  */
+  const handleSaveAcademic = async () => {
+    try {
+      const userId = getId(); // Lấy user ID từ hàm getId
+      //const achievementsText = getAchievementsText();achievements: achievementsText
+      const data = { ...academic, user_id: userId }; // Gắn user ID vào academic data
+      const response = await axios.post('http://localhost:5000/api/academic/add', data, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực
+        },
+      });
+  
+      console.log('Academic data:', data);
+  
+      // Kiểm tra phản hồi từ server
+      if (response.data.success) {
+        alert('Thông tin học vấn đã được lưu!');
+      } else {
+        alert(`Lỗi khi lưu thông tin học vấn: ${response.data.message}`);
+      }
+    } catch (error) {
+      if (error.response) {
+        // Lỗi từ server
+        console.error('Error response from server:', error.response.data);
+        alert(`Có lỗi xảy ra: ${error.response.data.message || 'Lỗi không xác định'}`);
+      } else if (error.request) {
+        // Không có phản hồi từ server
+        console.error('Error request:', error.request);
+        alert('Không có phản hồi từ server. Vui lòng kiểm tra kết nối hoặc trạng thái server.');
+      } else {
+        // Lỗi khác
+        console.error('Error message:', error.message);
+        alert(`Có lỗi xảy ra: ${error.message}`);
+      }
+    }
+  };
+  
+  
   ///////////////////////////////END FORM THÔNG TIN HỌC VẤN////////////////////////
 
 
@@ -431,73 +552,7 @@ const Profile = () => {
       [id]: value,
     }));
   };
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProfile({ ...profile, [name]: value });
-  };
-
-  const [profile, setProfile] = useState({
-    first_name: '',
-    last_name: '',
-    gender: '',
-    email: '',
-    phone: '',
-    nationality: '',
-    date_of_birth: '',
-    location: '',
-    specific_address: '',
-    job_title: '',
-    job_level: '',
-    current_industry: '',
-    current_field: '',
-    years_of_experience: '',
-    current_salary: '',
-    desired_work_location: '',
-    desired_salary: '',
-    education: '',
-    experience: [],
-    skills: [],
-    cv_files: []
-  });
-
-  const [loading, setLoading] = useState(true); // State để kiểm tra trạng thái loading
-  const [error, setError] = useState(null); // State để lưu lỗi (nếu có)
-
-
-  const handleSave = async () => {
-    try {
-      const idnd = getId(); // Lấy user ID từ hàm getId
-      const data = { ...profile, user_id: idnd }; // Gắn user ID vào profile
-      const response = await axios.post('http://localhost:5000/api/profiles/profile', data, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực
-        },
-      });
   
-      console.log('data', data);
-  
-      // Kiểm tra phản hồi từ server
-      if (response.data.success) {
-        alert('Profile saved successfully!');
-      } else {
-        alert(`Failed to save profile: ${response.data.message}`);
-      }
-    } catch (error) {
-      if (error.response) {
-        // Lỗi từ server
-        console.error('Error response from server:', error.response.data);
-        alert(`An error occurred: ${error.response.data.message || 'Unknown error'}`);
-      } else if (error.request) {
-        // Không có phản hồi từ server
-        console.error('Error request:', error.request);
-        alert('No response from server. Please check your connection or server status.');
-      } else {
-        // Lỗi khác
-        console.error('Error message:', error.message);
-        alert(`An error occurred: ${error.message}`);
-      }
-    }
-  };  
 
   // Hàm xử lý checkbox
   const handleChange = () => {
@@ -1120,11 +1175,12 @@ const Profile = () => {
                   </label>
                   <input
                     type="text"
-                    id="major"
+                    id="industry"
+                    name="industry"
+                    value={academic.industry}
+                    onChange={handleInputChangeAcademic}
                     className="user-info-edit-input"
                     placeholder="Nhập chuyên ngành"
-                    value={major}
-                    onChange={(e) => setMajor(e.target.value)}
                   />
                 </div>
                 <div className="user-info-edit-col">
@@ -1134,11 +1190,12 @@ const Profile = () => {
                     </label>
                     <input
                       type="text"
-                      id="school"
+                      id="school_name"
+                      name="school_name"
                       className="user-info-edit-input"
                       placeholder="Nhập trường"
-                      value={school}
-                      onChange={(e) => setSchool(e.target.value)}
+                      value={academic.school_name}
+                      onChange={handleInputChangeAcademic}
                     />
                   </div>
                   <div className="user-info-edit-row">
@@ -1148,8 +1205,9 @@ const Profile = () => {
                     <select
                       id="degree"
                       className="user-info-edit-select"
-                      value={degree}
-                      onChange={(e) => setDegree(e.target.value)}
+                      name="degree"
+    value={academic.degree}
+    onChange={handleInputChangeAcademic}
                     >
                       <option value="">Chọn bằng cấp</option>
                       <option value="highschool">Trung học</option>
@@ -1173,8 +1231,9 @@ const Profile = () => {
                         id="start-month"
                         className="form-input"
                         placeholder="MM/YYYY"
-                        value={startMonth}
-                        onChange={(e) => setStartMonth(e.target.value)}
+                        name="start_date"
+    value={academic.start_date}
+    onChange={handleInputChangeAcademic}
                       />
                       <span className="icon-calendar">📅</span>
                     </div>
@@ -1189,8 +1248,9 @@ const Profile = () => {
                         id="end-month"
                         className="form-input"
                         placeholder="MM/YYYY"
-                        value={endMonth}
-                        onChange={(e) => setEndMonth(e.target.value)}
+                        name="end_date"
+    value={academic.end_date}
+    onChange={handleInputChangeAcademic}
                       />
                       <span className="icon-calendar">📅</span>
                     </div>
@@ -1214,10 +1274,10 @@ const Profile = () => {
               </form>
               {/* Footer (Save/Cancel) */}
               <div className="user-info-edit-button-row">
-                <button className="user-info-edit-save-btn" type="submit">
+                <button onClick={handleSaveAcademic} className="user-info-edit-save-btn" type="submit">
                   Lưu
                 </button>
-                <button className="user-info-edit-cancel-btn" type="button" onClick={handleCloseEduInfoEdit}>
+                <button  className="user-info-edit-cancel-btn" type="button" onClick={handleCloseEduInfoEdit}>
                   Hủy
                 </button>
               </div>
