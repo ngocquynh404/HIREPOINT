@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import '../../../styles/searchjob.css'
 import SearchJobBar from '../../UI/SearchJobBar';
 import ApplyJob from '../applicant/ApplyJob';
+import axios from 'axios';
 
 export default function Jobs() {
     const jobData = [
@@ -357,7 +358,6 @@ export default function Jobs() {
             remainingDays: 6
         }
     ];
-
     const [currentPage, setCurrentPage] = useState(0);
     const jobsPerPage = 15;
 
@@ -404,11 +404,22 @@ export default function Jobs() {
     const openApplyForm = (job) => {
         setJobToApply(job); // Gán công việc được chọn
     };
-
+    const [filteredJobs, setFilteredJobs] = useState([]);
     const closeApplyForm = () => {
         setJobToApply(null); // Đóng form ứng tuyển
     };
-
+    useEffect(() => {
+        if (searchQuery) {
+            const filtered = jobData.filter(job =>
+                job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                job.company.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredJobs(filtered);
+        } else {
+            setFilteredJobs(jobData); // Reset to all jobs if searchQuery is empty
+        }
+    }, [searchQuery]);
+    
     return (
         <div className='search-job-board'>
             <div className='search-job-header'>
@@ -440,31 +451,53 @@ export default function Jobs() {
                 <div className='search-job-board-list-left'>
                     <div className='search-job-list'>
                         <div className="search-job-board-list-container">
-                            {currentJobs.map((job, index) => (
-                                <div key={index} className="search-job-info-item-card">
-                                    <div className="search-job-board-company-logo">
-                                        <img src={job.logo} alt="Company Logo" />
-                                    </div>
-                                    <div className="search-job-info-sections">
-                                        <Link to={`/jobs/jobdetail/${job.id}`} className="search-job-info-position-title">
-                                            <h2>{job.title}</h2>
-                                        </Link>
-                                        <p className="search-job-info-company-name">{job.company}</p>
-                                        <span className="search-job-salary-info">{job.salary}</span>
-                                        <div className="search-job-info-details">
-                                            <span className="search-job-location-info">📍 {job.location}</span>
-                                            <span className="search-job-remaining-days">⏳ Còn {job.remainingDays} ngày để ứng tuyển</span>
+                            {filteredJobs.length > 0 ? (
+                                filteredJobs.map((job) => (
+                                    <div key={job._id} job={job} className="search-job-info-item-card">
+                                        <div className="search-job-board-company-logo">
+                                            <img src={'defaultLogo.png'} alt="Company Logo" />
                                         </div>
-                                        <p className="search-job-update">Cập nhật {job.updateTime} trước</p>
-                                    </div>
-                                    <div className="search-job-salary-apply">
-                                        <button className="search-job-apply-button" onClick={() => openApplyForm(job)}>Ứng tuyển</button>
-                                        <div className="search-job-info-favorite-icon" onClick={() => toggleFavorite(job.title)}>
-                                            <span>{favorites.includes(job.title) ? '❤️' : '🤍'}</span>
+                                        <div className="search-job-info-sections">
+                                            <Link to={`/jobs/jobdetail/${job._id}`} className="search-job-info-position-title">
+                                                <h2>{job.title}</h2>
+                                            </Link>
+                                            <p className="search-job-info-company-name">{'comayname'}</p>
+                                            <span className="search-job-salary-info">{job.salary}</span>
+                                            <div className="search-job-info-details">
+                                                <span className="search-job-location-info">📍 {job.location}</span>
+                                                <span className="search-job-remaining-days">⏳ Còn{' '}
+                                                {isNaN(
+                                                    Math.max(
+                                                        Math.ceil(
+                                                            (new Date(job.application_deadline) - new Date()) /
+                                                            (1000 * 60 * 60 * 24)
+                                                        ),
+                                                        0
+                                                    )
+                                                )
+                                                    ? 0 // Nếu NaN, hiển thị 0
+                                                    : Math.max(
+                                                        Math.ceil(
+                                                            (new Date(job.application_deadline) - new Date()) /
+                                                            (1000 * 60 * 60 * 24)
+                                                        ),
+                                                        0
+                                                    )}{' '}
+                                                ngày để ứng tuyển</span>
+                                            </div>
+                                            <p className="search-job-update">Cập nhật {job.updateTime} trước</p>
+                                        </div>
+                                        <div className="search-job-salary-apply">
+                                            <button className="search-job-apply-button" onClick={() => openApplyForm(job)}>Ứng tuyển</button>
+                                            <div className="search-job-info-favorite-icon" onClick={() => toggleFavorite(job.title)}>
+                                                <span>{favorites.includes(job.title) ? '❤️' : '🤍'}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <p>No jobs found</p>
+                            )}
                         </div>
                         <div className="search-job-pagination-indicator">
                             <div className="search-job-nav-buttons">
