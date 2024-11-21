@@ -31,32 +31,52 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Lỗi server khi theo dõi công ty', error });
   }
 });
+router.get('/followed-companies/:userId', async (req, res) => {
+  const { userId } = req.params; // Lấy userId từ params trong URL
 
-// Route to get followed companies, using the authenticateToken middleware
-router.get('/followedcompanies', authenticateToken, async (req, res) => {
   try {
-    const userId = req.userId;  // Access userId from the middleware
-    const followedCompanies = await FollowedCompany.find({ userId });  // Query followed companies by userId
-    res.json(followedCompanies);
-  } catch (error) {
-    console.error('Error fetching followed companies:', error);
-    res.status(500).json({ message: 'Failed to fetch followed companies.' });
+    // Tìm tất cả các bản ghi trong FollowedCompany mà user_id trùng với userId
+    const followedCompanies = await FollowedCompany.find({ user_id: userId })
+      .populate('company_id') // Dùng populate để lấy thông tin chi tiết về công ty
+      .exec();
+
+    // Nếu không tìm thấy công ty nào
+    if (!followedCompanies.length) {
+      return res.status(404).json({ message: 'No followed companies found' });
+    }
+
+    // Lấy mảng các công ty
+    const companies = followedCompanies.map(followedCompany => followedCompany.company_id);
+
+    // Trả về danh sách công ty
+    return res.status(200).json(companies);
+  } catch (err) {
+    console.error("Error fetching followed companies:", err);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
-router.get('/', authenticateToken, async (req, res) => {
+router.delete('/:userId/:companyId', async (req, res) => {
+  const { userId, companyId } = req.params;
+
   try {
-    const userId = req.userId; // Lấy userId từ middleware authenticateToken
+    // Tìm và xóa bản ghi FollowedCompany
+    const result = await FollowedCompany.findOneAndDelete({
+      user_id: userId,
+      company_id: companyId
+    });
 
-    // Tìm tất cả các bản ghi công ty đã theo dõi bởi user
-    const followedCompanies = await FollowedCompany.find({ user_id: userId }).populate('company_id'); // Sử dụng populate để lấy thông tin chi tiết của công ty
+    if (!result) {
+      return res.status(404).json({ message: 'Followed company not found' });
+    }
 
-    // Trả về danh sách các công ty đã theo dõi
-    res.json(followedCompanies);
-  } catch (error) {
-    console.error('Error fetching followed companies:', error);
-    res.status(500).json({ message: 'Lỗi khi lấy danh sách công ty đã theo dõi', error });
+    return res.status(200).json({ message: 'Unfollowed company successfully' });
+  } catch (err) {
+    console.error("Error unfollowing company:", err);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
+
+
 
 // DELETE - Hủy theo dõi một công ty
 router.delete('/:id', authenticateToken, async (req, res) => {

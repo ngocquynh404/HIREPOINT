@@ -1,30 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import '../../../styles/mycompany.css';
+import axios from 'axios';
+import { getId } from '../../../libs/isAuth';
+
 import { FaBuilding, FaEye, FaUsers, FaTimes } from 'react-icons/fa';
 
 const MyCompany = () => {
     const [activeTab, setActiveTab] = useState('profileView');
 
-    // Dữ liệu mẫu cho các công ty
-    const companies = [
-        {
-            id: 1,
-            name: 'CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ CỬU LONG MEKO',
-            industry: 'Bán lẻ/Bán sỉ',
-            followers: 10,
-            jobs: 2,
-            logo: 'https://via.placeholder.com/50',
-        },
-        {
-            id: 2,
-            name: 'Daikin Air Conditioning (Vietnam) Joint Stock Company',
-            industry: 'Sản xuất',
-            followers: 588,
-            jobs: 6,
-            logo: 'https://via.placeholder.com/50',
-        },
-    ];
+
+    const [companies, setCompanies] = useState([]);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const userId = getId(); // Gọi getId() để lấy userId
+
+        const fetchFollowedCompanies = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/api/followedcompanies/followed-companies/${userId}`);
+                setCompanies(response.data); // Lưu dữ liệu công ty vào state
+            } catch (err) {
+                setError('There was an error fetching followed companies.');
+                console.error(err);
+            }
+        };
+
+        if (userId) {
+            fetchFollowedCompanies();
+        }
+    }, []);
+    // Chạy 1 lần khi component mount
+
+    const handleUnfollow = async (companyId) => {
+        const userId = getId(); // Lấy userId từ getId()
+
+        if (!companyId) {
+            console.error('Company ID is missing');
+            return;
+        }
+
+        try {
+            // Gửi yêu cầu DELETE để hủy theo dõi công ty
+            const response = await axios.delete(`http://localhost:5000/api/followedcompanies/${userId}/${companyId}`);
+            const url = `http://localhost:5000/api/followedcompanies/${userId}/${companyId}`;
+            console.log('Sending DELETE request to:', url);
+            // Nếu thành công, cập nhật lại danh sách công ty đã theo dõi
+            setCompanies(prevCompanies => prevCompanies.filter(company => company._id !== companyId));
+            alert(response.data.message); // Hiển thị thông báo hủy theo dõi thành công
+        } catch (err) {
+            console.error(err);
+            alert('Error unfollowing company.');
+        }
+    };
 
     // Chuyển đổi tab
     const handleTabClick = (tab) => setActiveTab(tab);
@@ -64,32 +92,36 @@ const MyCompany = () => {
                             </a>
                         </div>
                     </div>
-                )} 
+                )}
 
                 {/* Nội dung tab "Theo dõi công ty" */}
                 {activeTab === 'followCompany' && (
                     <div className="my-company-content followed-companies">
-                        {companies.map((company) => (
-                            <div key={company.id} className="my-company-item">
-                                <div className='my-company-info-left'>
-                                    <img src={company.logo} alt={company.name} className="my-company-logo" />
-                                    <div className="my-company-info">
-                                        <Link to={`/companies/companydetail/${company.id}`}>
-                                            <h4>{company.name}</h4>
-                                        </Link>
-                                        <span>
-                                            <FaBuilding /> {company.industry}
-                                        </span>
-                                        <span>
-                                            <FaUsers /> {company.followers} lượt theo dõi | 📄 {company.jobs} việc làm
-                                        </span>
+                        {companies.length > 0 ? (
+                            companies.map(company => (
+                                <div key={company._id} className="my-company-item">
+                                    <div className='my-company-info-left'>
+                                        <img src={company.logo} alt={company.name} className="my-company-logo" />
+                                        <div className="my-company-info">
+                                            <Link to={`/companies/companydetail/${company._id}`}>
+                                                <h4>{company.name}</h4>
+                                            </Link>
+                                            <span>
+                                                <FaBuilding /> {company.industry}
+                                            </span>
+                                            <span>
+                                                <FaUsers /> {company.quymo} Nhân viên | 📄 {company.location}
+                                            </span>
+                                        </div>
                                     </div>
+                                    <button className="my-company-unfollow" onClick={() => handleUnfollow(company._id)} >
+                                        <FaTimes /> Huỷ theo dõi
+                                    </button>
                                 </div>
-                                <button className="my-company-unfollow">
-                                    <FaTimes /> Huỷ theo dõi
-                                </button>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <p>You are not following any companies.</p>
+                        )}
                     </div>
                 )}
             </div>
