@@ -13,7 +13,7 @@ const Application = require('./routers/Application');
 const Recruiter = require('./routers/Recruiter');
 const SavedJob = require('./routers/SavedJob');
 const Job = require('./routers/Job');
-const FollowedCompany = require('./routers/FollowedCompany');
+const FollowedCompany= require('./routers/FollowedCompany');
 const Feedback = require('./routers/Feedback');
 const Interview = require('./routers/Interview');
 const JobStats = require('./routers/JobStats');
@@ -26,6 +26,7 @@ const TestResult = require('./routers/TestResult');
 const Filter = require('./routers/Fliter');
 const logoutRouter = require('./routers/Logout'); 
 const AvailableTime = require('./routers/AvailableTime');
+const Academic = require('./routers/Academic');
 // Import middleware authenticateSocket
 const authenticateSocket = require('./middleware/authenticateSocket');
 
@@ -94,6 +95,7 @@ app.use('/api/testquestion', TestQuestion);
 app.use('/api/testresult', TestResult);
 app.use('/api/filter', Filter);
 app.use('/api/availabletime', AvailableTime);
+app.use('/api/academic', Academic);
 
 app.use('/api', logoutRouter);
 // MongoDB connection
