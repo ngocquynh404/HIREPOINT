@@ -552,6 +552,49 @@ const Profile = () => {
       [id]: value,
     }));
   };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProfile({ ...profile, [name]: value });
+  };
+
+  const [profile, setProfile] = useState({
+    first_name: '',
+    last_name: '',
+    gender: '',
+    email: '',
+    phone: '',
+    nationality: '',
+    date_of_birth: '',
+    location: '',
+    specific_address: '',
+    job_title: '',
+    job_level: '',
+    current_industry: '',
+    current_field: '',
+    years_of_experience: '',
+    current_salary: '',
+    desired_work_location: '',
+    desired_salary: '',
+    education: '',
+    experience: [],
+    skills: [],
+    cv_files: []
+  });
+
+  const [loading, setLoading] = useState(true); // State để kiểm tra trạng thái loading
+  const [error, setError] = useState(null); // State để lưu lỗi (nếu có)
+
+
+  const handleSave = async () => {
+    try {
+      const idnd = getId(); // Lấy user ID từ hàm getId
+      const data = { ...profile, user_id: idnd }; // Gắn user ID vào profile
+      const response = await axios.post('http://localhost:5000/api/profiles/profile', data, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực 
+        },
+      });
+
   
 
   // Hàm xử lý checkbox
