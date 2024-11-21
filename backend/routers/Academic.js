@@ -3,13 +3,16 @@ const Academic = require('../models/Academic'); // Đường dẫn tới model A
 const authenticateToken = require('../middleware/authenticateToken'); // Middleware JWT
 const router = express.Router();
 
-// Thêm thông tin học vấn (CREATE)
 router.post('/add', authenticateToken, async (req, res) => {
   try {
-    const { industry, school_name, degree, start_date, end_date, achievements } = req.body;
+    const { user_id, industry, school_name, degree, start_date, end_date, achievements } = req.body;
+
+    if (!user_id || !industry) {
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin học vấn.' });
+    }
 
     const newAcademic = new Academic({
-      user_id: req.userId, // Lấy userId từ middleware authenticateToken
+      user_id,
       industry,
       school_name,
       degree,
@@ -19,11 +22,38 @@ router.post('/add', authenticateToken, async (req, res) => {
     });
 
     const savedAcademic = await newAcademic.save();
-    res.status(201).json(savedAcademic);
+
+    // Trả về phản hồi thành công với dữ liệu lưu
+    res.status(201).json({
+      success: true,
+      message: 'Thông tin học vấn đã được lưu thành công.',
+      data: savedAcademic, // trả lại dữ liệu đã lưu
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Lỗi khi thêm thông tin học vấn.' });
+    console.error(error); // Log lỗi
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi thêm thông tin học vấn.',
+    });
   }
 });
+
+
+router.get('/:userId', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const academicData = await Academic.find({ user_id: userId });
+
+    if (academicData.length === 0) {  // Check for empty array
+      return res.status(404).json({ message: 'No academic data found for this user' });
+    }
+
+    res.json(academicData);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching academic data', error: error.message });
+  }
+});
+
 
 // Sửa thông tin học vấn (UPDATE)
 router.put('/edit/:id', authenticateToken, async (req, res) => {

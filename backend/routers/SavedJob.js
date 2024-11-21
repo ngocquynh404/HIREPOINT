@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const SavedJob = require('../models/SavedJob');
 const authenticateToken = require('../middleware/authenticateToken');
+const Job = require('../models/Job');
+const Company = require('../models/Company');
 
 // CREATE - Lưu công việc mới savedjobs/save-job
 router.post('/save-job', authenticateToken, async (req, res) => {
@@ -46,15 +48,26 @@ router.get('/user/me', authenticateToken, async (req, res) => {
   }
 });
 
-// READ ALL - Lấy tất cả công việc đã lưu của người dùng
-router.get('/user/:user_id', async (req, res) => {
+router.get('/mysavedjobs/:userId', async (req, res) => {
+  console.log('Request received for userId:', req.params.userId);
   try {
-    const savedJobs = await SavedJob.find({ user_id: req.params.user_id }).populate('job_id');
-    res.json(savedJobs);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+      const { userId } = req.params;
+      const savedJobs = await SavedJob.find({ user_id: userId }).populate({
+          path: 'job_id',
+          populate: { path: 'company_id' }
+      });
+
+      if (!savedJobs) {
+          return res.status(404).json({ message: 'Không tìm thấy công việc đã lưu.' });
+      }
+
+      res.status(200).json(savedJobs);
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Có lỗi xảy ra khi lấy danh sách công việc đã lưu.' });
   }
 });
+
 
 // DELETE - Xóa công việc đã lưu
 router.delete('/:id', authenticateToken, async (req, res) => {

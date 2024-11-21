@@ -66,7 +66,7 @@ export default function ApplicantNavBar() {
                 </button>
             </div>
             <div className="applicant-icon" onClick={toggleMenu}>
-                <img src="https://via.placeholder.com/50" alt="User Icon" className="applicant-image" />
+                <img src={user?.avatar} alt="User Icon" className="applicant-image" />
             </div>
 
             {/* Dropdown Menu */}

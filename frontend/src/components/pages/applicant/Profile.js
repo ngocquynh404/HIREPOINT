@@ -329,6 +329,7 @@ const Profile = () => {
 
   const [loading, setLoading] = useState(true); // State để kiểm tra trạng thái loading
   const [error, setError] = useState(null); // State để lưu lỗi (nếu có)
+  const [user, setUser] = useState(null);
 
 
   const handleSave = async () => {
@@ -340,9 +341,9 @@ const Profile = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực
         },
       });
-  
+
       console.log('data', data);
-  
+
       // Kiểm tra phản hồi từ server
       if (response.data.success) {
         alert('Profile saved successfully!');
@@ -364,7 +365,7 @@ const Profile = () => {
         alert(`An error occurred: ${error.message}`);
       }
     }
-  };  
+  };
   ///////////////////////////////END FORM THÔNG TIN CƠ BẢN////////////////////////
 
 
@@ -397,6 +398,7 @@ const Profile = () => {
     setEditorState(EditorState.createEmpty()); // Reset trình chỉnh sửa thành tựu
   };
   const [academic, setAcademic] = useState({
+    user_id:'',
     industry: '',
     school_name: '',
     degree: '',
@@ -416,29 +418,29 @@ const Profile = () => {
   const handleSaveAcademic = async () => {
     try {
       const userId = getId(); // Lấy user ID từ hàm getId
-      //const achievementsText = getAchievementsText();achievements: achievementsText
       const data = { ...academic, user_id: userId }; // Gắn user ID vào academic data
+  
       const response = await axios.post('http://localhost:5000/api/academic/add', data, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực
         },
       });
   
-      console.log('Academic data:', data);
+      // Log phản hồi để kiểm tra
+      console.log('Server response:', response.data);
   
-      // Kiểm tra phản hồi từ server
       if (response.data.success) {
         alert('Thông tin học vấn đã được lưu!');
       } else {
-        alert(`Lỗi khi lưu thông tin học vấn: ${response.data.message}`);
+        // Nếu success là false, hiển thị thông báo lỗi
+        alert(`Lỗi khi lưu thông tin học vấn: ${response.data.message || 'Lỗi không xác định'}`);
       }
     } catch (error) {
+      // Xử lý lỗi từ phía server
       if (error.response) {
-        // Lỗi từ server
         console.error('Error response from server:', error.response.data);
         alert(`Có lỗi xảy ra: ${error.response.data.message || 'Lỗi không xác định'}`);
       } else if (error.request) {
-        // Không có phản hồi từ server
         console.error('Error request:', error.request);
         alert('Không có phản hồi từ server. Vui lòng kiểm tra kết nối hoặc trạng thái server.');
       } else {
@@ -449,7 +451,8 @@ const Profile = () => {
     }
   };
   
-  
+
+
   ///////////////////////////////END FORM THÔNG TIN HỌC VẤN////////////////////////
 
 
@@ -518,6 +521,7 @@ const Profile = () => {
     startMonth: "", // Từ tháng
     endMonth: "", // Đến tháng
   });
+  const [academicData, setAcademicData] = useState([]);
 
   // Hàm mở form
   const handleExpClick = () => {
@@ -552,7 +556,7 @@ const Profile = () => {
       [id]: value,
     }));
   };
-  
+
 
   // Hàm xử lý checkbox
   const handleChange = () => {
@@ -577,8 +581,65 @@ const Profile = () => {
         setLoading(false); // Dừng trạng thái loading
       }
     };
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem('token'); // Lấy token từ localStorage
 
+        // Kiểm tra nếu không có token
+        if (!token) {
+          setError('Token is missing, please login again.');
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get('http://localhost:5000/api/users/me', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Gửi token trong header
+          },
+        });
+
+        setUser(response.data); // Lưu dữ liệu người dùng
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+        setError('Failed to fetch user data.');
+        setLoading(false);
+      }
+    };
+    const fetchAcademicData = async () => {
+      try {
+        const userId = getId(); // Lấy userId từ frontend
+        if (!userId) {
+          throw new Error('User ID không tồn tại');
+        }
+    
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Token không hợp lệ hoặc đã hết hạn');
+        }
+    
+        const response = await axios.get(`http://localhost:5000/api/academic/${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`, // Token xác thực
+          },
+        });
+    
+        if (response.data.length === 0) {
+          throw new Error('Không có thông tin học vấn cho người dùng này');
+        }
+    
+        setAcademicData(response.data); // Lưu dữ liệu học vấn vào state
+      } catch (err) {
+        setError(err.message); // Ghi nhận lỗi nếu có
+        console.error('Error fetching academic data:', err);
+      } finally {
+        setLoading(false); // Xong, không còn loading nữa
+      }
+    };
+    
     fetchProfile();
+    fetchAcademicData();
+    fetchUserProfile()
   }, [idnd]);
 
   return (
@@ -592,7 +653,7 @@ const Profile = () => {
         {profile && (
           <>
             <div className='user-info-name-position'>
-              <div className="user-info-avatar">{<img src={''} alt="Avatar" />}</div>
+              <div className="user-info-avatar">{<img src={user?.avatar} alt="Avatar" />}</div>
 
               <h2 className="user-info-name"> {profile.first_name && profile.last_name
                 ? `${profile.first_name} ${profile.last_name}`
@@ -641,7 +702,7 @@ const Profile = () => {
                   <div className="user-info">
                     <div>
                       <FaEnvelope className="user-info-icon" />
-                      <span>Nơi làm việc: {profile.desired_work_location || 'No Desired Location'}</span>
+                      <span>Nơi làm việc: {profile.specific_address || 'No Desired Location'}</span>
                     </div>
                   </div>
                   <div className='user-info'>
@@ -1116,22 +1177,25 @@ const Profile = () => {
           <FaEdit />
         </button>
         <div className="user-info-details">
-          <div className='edu-info'>
+        {academicData.length > 0 ? (
+          academicData.map((academic, academic_id) => (
+          <div key={academic_id} className='edu-info'>
             <div className="edu-card-header">
               <h3 className="user-basic-info-header">Thông tin học vấn</h3>
-              <h3 className="edu-title">Đại học Bách khoa Hà Nội</h3>
-              <p className="edu-subtitle">Viện Điện - Cử nhân</p>
+              <h3 className="edu-title">{academic?.school_name}</h3>
+              <p className="edu-subtitle">{academic?.industry}</p>
             </div>
             <div className="edu-card-body">
               <ul className="edu-achievements">
                 <li>
                   <FaMedal className="edu-icon" />
-                  <span>Thủ khoa đầu vào Viện Điện (2017)</span>
+                  <span>{academic?.start_date} - {academic?.end_date}</span>
                 </li>
                 <li>
                   <FaBook className="edu-icon" />
-                  <span>Giải Ba cuộc thi Olympic Đại số cấp trường (2017 – 2018)</span>
+                  <span>{academic?.achievements}</span>
                 </li>
+                {/*
                 <li>
                   <FaAward className="edu-icon" />
                   <span>Giải Nhì nghiên cứu khoa học bộ môn Điều khiển tự động (2020 – 2021)</span>
@@ -1148,9 +1212,15 @@ const Profile = () => {
                   <FaAward className="edu-icon" />
                   <span>Sinh viên 5 tốt cấp trường (2020 – 2021)</span>
                 </li>
+                */}
               </ul>
+                
             </div>
           </div>
+          ))
+        ) : (
+          <p>Không có thông tin học vấn.</p>
+        )}
         </div>
       </div>
       {/* Form chỉnh sửa thông tin học vấn *********************************************/}
@@ -1206,8 +1276,8 @@ const Profile = () => {
                       id="degree"
                       className="user-info-edit-select"
                       name="degree"
-    value={academic.degree}
-    onChange={handleInputChangeAcademic}
+                      value={academic.degree}
+                      onChange={handleInputChangeAcademic}
                     >
                       <option value="">Chọn bằng cấp</option>
                       <option value="highschool">Trung học</option>
@@ -1232,8 +1302,8 @@ const Profile = () => {
                         className="form-input"
                         placeholder="MM/YYYY"
                         name="start_date"
-    value={academic.start_date}
-    onChange={handleInputChangeAcademic}
+                        value={academic.start_date}
+                        onChange={handleInputChangeAcademic}
                       />
                       <span className="icon-calendar">📅</span>
                     </div>
@@ -1249,8 +1319,8 @@ const Profile = () => {
                         className="form-input"
                         placeholder="MM/YYYY"
                         name="end_date"
-    value={academic.end_date}
-    onChange={handleInputChangeAcademic}
+                        value={academic.end_date}
+                        onChange={handleInputChangeAcademic}
                       />
                       <span className="icon-calendar">📅</span>
                     </div>
@@ -1262,12 +1332,13 @@ const Profile = () => {
                   </label>
                   <div className="textarea-wrapper">
                     <div id="achievement" className="form-textarea">
-                      <Editor
-                        editorState={editorState}
-                        onEditorStateChange={setEditorState}
-                        toolbarHidden={false}
-                        placeholder="Nhập thành tựu của bạn..."
-                      />
+                      <textarea
+                        className="company-profile-des-textarea"
+                        placeholder="Nhập..."
+                        name="achievements"
+                        value={academic.achievements}
+                        onChange={handleInputChangeAcademic}
+                      ></textarea>
                     </div>
                   </div>
                 </div>
@@ -1277,7 +1348,7 @@ const Profile = () => {
                 <button onClick={handleSaveAcademic} className="user-info-edit-save-btn" type="submit">
                   Lưu
                 </button>
-                <button  className="user-info-edit-cancel-btn" type="button" onClick={handleCloseEduInfoEdit}>
+                <button className="user-info-edit-cancel-btn" type="button" onClick={handleCloseEduInfoEdit}>
                   Hủy
                 </button>
               </div>
