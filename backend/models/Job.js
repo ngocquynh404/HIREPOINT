@@ -8,7 +8,7 @@ const jobSchema = new mongoose.Schema({
   requirements: { type: String },  // Yêu cầu công việc
   skills: { type: [String], required: true },  // Kỹ năng cần thiết cho công việc
   qualifications: { type: [String], required: true },  // Bằng cấp yêu cầu
-  salary: { type: String },  // Mức lương
+  salary: { type: Number },  // Mức lương
   job_type: { type: String, enum: ['full_time', 'part_time', 'internship'], required: true },  // Loại công việc
   vacancy: { type: Number },  // Số lượng tuyển dụng
   location: { type: String },  // Địa điểm công việc
