@@ -313,7 +313,7 @@ function JobDetail() {
                                             <button
                                                 key={job._id}
                                                 className={`related-pagination-dot ${index === currentPage ? 'active' : ''}`}
-                                                onClick={() => setCurrentPage(index)}
+                                                onClick={() => setCurrentPage(job._id)}
                                             />
                                         ))}
                                         <button className='related-nav-button' onClick={nextPage} disabled={currentPage === totalPages - 1}>&#8250;</button>

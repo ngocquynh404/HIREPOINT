@@ -3,6 +3,7 @@ const router = express.Router();
 const Application = require('../models/Application');
 const authenticateToken = require('../middleware/authenticateToken');
 const Profile = require('../models/Profile');
+const Company= require('../models/Company');
 const mongoose = require('mongoose');
 const Notification = require('../models/Notification'); 
 const Job = require('../models/Job');
@@ -104,25 +105,23 @@ router.put('/approve/:applicationId', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Có lỗi khi duyệt ứng viên.', error: err.message });
   }
 });
-
-
-
-// GET - Lấy tất cả đơn ứng tuyển của người dùng
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/myapplicantion/:userId', async (req, res) => {
   try {
-    const applications = await Application.find({ candidate_id: req.userId })
-      .populate('job_id', 'title description company_id')
-      .populate('job_id.company_id', 'name location website industry')
-      .exec();
+      const { userId } = req.params;
 
-    if (!applications || applications.length === 0) {
-      return res.status(404).json({ message: 'Không có đơn ứng tuyển nào' });
-    }
+      const applications = await Application.find({ candidate_id: userId })
+          .populate({
+              path: 'job_id', // Populate thông tin công việc
+              populate: { path: 'company_id' } // Populate thông tin công ty
+          });
 
-    res.json(applications);
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi máy chủ', error });
+      res.status(200).json(applications);
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Có lỗi xảy ra khi lấy danh sách ứng tuyển.' });
   }
 });
+
+
 
 module.exports = router;

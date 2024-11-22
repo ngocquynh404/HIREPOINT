@@ -61,6 +61,49 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error });
   }
 });
+router.get('/filter', async (req, res) => {
+  try {
+    const { keyword, job_type, location, company_name, min_salary, max_salary, industry, skills } = req.query;
+
+    let filter = {};
+
+    // Filter by keyword
+    if (keyword) filter.title = { $regex: keyword, $options: 'i' };
+
+    // Filter by job type
+    if (job_type) filter.job_type = job_type;
+
+    // Filter by location
+    if (location) filter.location = { $regex: location, $options: 'i' };
+
+    // Filter by salary range
+    if (min_salary && max_salary) {
+      filter.salary = { $gte: parseInt(min_salary), $lte: parseInt(max_salary) };
+    } else if (min_salary) {
+      filter.salary = { $gte: parseInt(min_salary) };
+    } else if (max_salary) {
+      filter.salary = { $lte: parseInt(max_salary) };
+    }
+
+    // Filter by industry and company name
+    const companyFilter = {};
+    if (industry) companyFilter.industry = { $regex: industry, $options: 'i' };
+    if (company_name) companyFilter.name = { $regex: company_name, $options: 'i' };
+
+    // Fetch jobs based on filters
+    const jobs = await Job.find(filter).populate({
+      path: 'company_id',
+      match: companyFilter,
+    }).exec();
+
+    const filteredJobs = jobs.filter((job) => job.company_id);
+
+    res.json(filteredJobs);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error });
+  }
+});
+
 
 // READ - Lấy thông tin chi tiết công việc theo ID
 router.get('/:id', async (req, res) => {
@@ -167,5 +210,54 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+router.get('/filter', async (req, res) => {
+  try {
+    const {
+      keyword,
+      job_type,
+      location,
+      status,
+      company_name,
+      min_salary,
+      max_salary,
+      industry,
+      skills,
+    } = req.query;
+
+    // Build the filter object
+    let filter = {};
+
+    if (keyword) filter.title = { $regex: keyword, $options: 'i' };
+    if (job_type) filter.job_type = job_type;
+    if (location) filter.location = { $regex: location, $options: 'i' };
+    if (status) filter.status = status;
+    if (skills) filter.skills = { $in: skills.split(',') };
+    if (min_salary || max_salary) {
+      filter.salary = {};
+      if (min_salary) filter.salary.$gte = Number(min_salary);
+      if (max_salary) filter.salary.$lte = Number(max_salary);
+    }
+    
+    const companyFilter = {};
+    if (industry) companyFilter.industry = { $regex: industry, $options: 'i' };
+    if (company_name) companyFilter.name = { $regex: company_name, $options: 'i' };
+
+    const jobs = await Job.find(filter)
+      .populate({
+        path: 'company_id',
+        match: companyFilter,
+      })
+      .exec();
+
+    const filteredJobs = jobs.filter((job) => job.company_id);
+
+    res.json(filteredJobs);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error });
+  }
+});
+
+
 
 module.exports = router;
