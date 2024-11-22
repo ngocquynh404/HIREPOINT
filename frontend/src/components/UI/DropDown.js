@@ -5,7 +5,7 @@ function Dropdown({ label, options, onSelect }) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOptions, setSelectedOptions] = useState([]);
     const dropdownRef = useRef(null);
-    const [inputValue, setInputValue] = useState("");
+
     const toggleDropdown = () => {
         setIsOpen(!isOpen);
     };
@@ -19,11 +19,7 @@ function Dropdown({ label, options, onSelect }) {
         setSelectedOptions(newSelections);
         onSelect(newSelections);
     };
-    const handleInputChange = (e) => {
-        const value = e.target.value;
-        setInputValue(value);
-        onSelect(value); 
-    };
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -44,10 +40,9 @@ function Dropdown({ label, options, onSelect }) {
             {isOpen && (
                 <div className="find-jobs-dropdown-menu">
                     <div className="find-jobs-dropdown-search">
-                        <input type="text" placeholder="Tìm kiếm" value={inputValue}
-                        onChange={handleInputChange}/>
+                        <input type="text" placeholder="Tìm kiếm" />
                     </div>
-                    {/* <ul>
+                    <ul>
                         {options.map((option) => (
                             <li key={option.id} className="find-jobs-dropdown-item">
                                 <label>
@@ -56,12 +51,12 @@ function Dropdown({ label, options, onSelect }) {
                                         checked={selectedOptions.some((selected) => selected.id === option.id)}
                                         onChange={() => handleOptionClick(option)}
                                     />
-                                    {option.name} }
+                                    {option.name} {/* Đảm bảo rằng `option.name` được đặt ở đây */}
                                     <span>({option.count})</span>
                                 </label>
                             </li>
                         ))}
-                    </ul> */}
+                    </ul>
                 </div>
             )}
         </div>

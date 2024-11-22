@@ -10,6 +10,7 @@ import {
     faCog,
     faPlus
 } from '@fortawesome/free-solid-svg-icons';
+import { FaBuilding, FaEye, FaUsers, FaTimes } from 'react-icons/fa';
 import '../../../styles/recruiterdashboard.css';
 import Profile from './Profile';
 import MyCompany from './MyCompany';
@@ -19,6 +20,7 @@ import JobNotificationManager from './JobNotificationManager';
 import axios from 'axios';
 import { getId } from '../../../libs/isAuth';
 import JobRecruitment from './JobRecruitment';
+import FindApplicant from './FindApplicant';
 
 const RecruiterDashboard = () => {
     const [user, setUser] = useState(null); // Lưu trữ dữ liệu người dùng
@@ -79,6 +81,8 @@ const RecruiterDashboard = () => {
                 return <JobRecruitment />;
             case 'alerts':
                 return <JobNotificationManager />
+            case 'find-applicant':
+                return <FindApplicant />
             case 'settings':
                 return <h2>Quản Lý Tài Khoản</h2>;
             default:
@@ -131,6 +135,14 @@ const RecruiterDashboard = () => {
                     >
                         <FontAwesomeIcon icon={faBriefcase} />
                         {!isCollapsed && <span>Tuyển dụng</span>}
+                    </a>
+                    <a
+                        href="#"
+                        className={`recruiter-dashboard-menu-item ${activeMenu === 'find-applicant' ? 'active' : ''}`}
+                        onClick={() => setActiveMenu('find-applicant')}
+                    >
+                        <FaUsers />
+                        {!isCollapsed && <span>Tìm kiếm ứng viên</span>}
                     </a>
                     <a
                         href="#"
