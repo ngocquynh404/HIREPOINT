@@ -53,8 +53,15 @@ export default function SignIn() {
                     navigate('/applicant-page');
                 }
             } else {
-                setError(data.message); // Hiển thị thông báo lỗi
+                
+                if (response.status === 400) {
+                    alert('Mật khẩu hoặc email không hợp lệ');
+                } else {
+                    setError(data.message); // Hiển thị thông báo lỗi khác
+                }
             }
+
+            
         } catch (err) {
             setError('Đăng nhập thất bại. Vui lòng thử lại.');
             console.error(err);
