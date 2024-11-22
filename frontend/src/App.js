@@ -17,10 +17,12 @@ import ApplicantDashboard from "./components/pages/applicant/ApplicantDashboard"
 import AdminDashboard from "./components/pages/admin/AdminDashboard";
 import JobSaved from "./components/pages/job/JobSaved";
 import RecruiterSignIn from "./components/pages/authentication/RecruiterSignIn";
+import RecruiterSignUp from "./components/pages/authentication/RecruiterSignUp";
+import RecruiterHomePage from "./components/pages/recruiter/RecruiterHomePage";
 
 function Layout() {
   const location = useLocation();
-  const hideHeaderFooter = location.pathname === "/sign-in" || location.pathname === "/sign-up" || location.pathname === "/recruiter-sign-in";
+  const hideHeaderFooter = location.pathname === "/sign-in" || location.pathname === "/sign-up" || location.pathname === "/recruiter-sign-in" || location.pathname === "/recruiter-homepage" || location.pathname === "/recruiter-sign-in" || location.pathname === "/recruiter-sign-up";
 
   return (
     <>
@@ -43,6 +45,8 @@ function Layout() {
         <Route exact path="/recruiter-page" element={<RecruiterDashboard />} />
         <Route exact path="/applicant-dashboard" element={<ApplicantDashboard />} />
         <Route exact path="/recruiter-sign-in" element={<RecruiterSignIn />} />
+        <Route exact path="/recruiter-sign-up" element={<RecruiterSignUp />} />
+        <Route exact path="/recruiter-homepage" element={<RecruiterHomePage />} />
 
       </Routes>
       {!hideHeaderFooter && <Footer />}
