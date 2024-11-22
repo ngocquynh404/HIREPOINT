@@ -557,7 +557,6 @@ const Profile = () => {
     }));
   };
 
-
   // Hàm xử lý checkbox
   const handleChange = () => {
     setIsChecked(!isChecked);
