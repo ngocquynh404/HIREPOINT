@@ -37,6 +37,32 @@ router.post('/newcompany', async (req, res) => {
     res.status(500).json({ message: 'Error adding company' });
   }
 });
+router.get('/me/:followedUser', async (req, res) => {
+  try {
+    const { followedUser } = req.params;  // Lấy userId từ params
+    console.log('followedUser:', followedUser);  // Log userId để kiểm tra
+
+    // Truy vấn FollowedCompany để lấy các công ty mà người dùng đã theo dõi
+    const follows = await FollowedCompany.find({ user_id: followedUser })
+      .populate('company_id')  // Populate thông tin công ty (company_id) từ mô hình Company
+      .exec();
+
+    console.log('Follows:', follows);  // Log kết quả populate để kiểm tra
+
+    if (!follows || follows.length === 0) {
+      return res.status(404).json({ message: 'No companies followed' });
+    }
+
+    // Lấy danh sách công ty từ các follow và trả về kết quả
+    const companies = follows.map(follow => follow.company_id);
+
+    res.status(200).json({ success: true, companies });
+  } catch (error) {
+    console.error('Error fetching followed companies:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 // READ ALL - Lấy tất cả các công ty
 router.get('/', async (req, res) => {
@@ -126,5 +152,6 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 });
+
 
 module.exports = router;
