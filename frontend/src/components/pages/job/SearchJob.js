@@ -392,7 +392,7 @@ export default function Jobs() {
     const [jobList, setJobList] = useState(jobData); // Dữ liệu danh sách công việc
     const [favoriteJobs, setFavoriteJobs] = useState([]); // Danh sách công việc yêu thích
     const [jobToApply, setJobToApply] = useState(null); // Công việc được chọn để ứng tuyển
-
+    const [searchQuery, setSearchQuery] = useState('');
     const handleFavoriteToggle = (jobTitle) => {
         setFavoriteJobs((prevFavorites) =>
             prevFavorites.includes(jobTitle)

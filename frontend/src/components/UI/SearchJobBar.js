@@ -111,7 +111,7 @@ function SearchJobBar() {
             </div>
             {showAdvancedFilters && (
                 <div className="search-job-advanced-filters"> 
-                    <Dropdown label="Ngành nghề" isInputField={true}
+                    <Dropdown label="Địa điểm" isInputField={true}
                         onSelect={handleJobSelect}/>
                     <Dropdown label="Lĩnh vực" isInputField={true}
                        onSelect={handleIndustrySelect}/>
