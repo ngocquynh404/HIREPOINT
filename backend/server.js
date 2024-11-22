@@ -26,6 +26,7 @@ const Filter = require('./routers/Fliter');
 const logoutRouter = require('./routers/Logout'); 
 const AvailableTime = require('./routers/AvailableTime');
 const Academic = require('./routers/Academic');
+const Experience = require('./routers/Experience');
 // Import middleware authenticateSocket
 const authenticateSocket = require('./middleware/authenticateSocket');
 
@@ -95,6 +96,7 @@ app.use('/api/testresult', TestResult);
 app.use('/api/filter', Filter);
 app.use('/api/availabletime', AvailableTime);
 app.use('/api/academic', Academic);
+app.use('/api/experience', Experience);
 
 app.use('/api', logoutRouter);
 // MongoDB connection

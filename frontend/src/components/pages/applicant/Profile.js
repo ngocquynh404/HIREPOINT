@@ -398,7 +398,7 @@ const Profile = () => {
     setEditorState(EditorState.createEmpty()); // Reset trình chỉnh sửa thành tựu
   };
   const [academic, setAcademic] = useState({
-    user_id:'',
+    user_id: '',
     industry: '',
     school_name: '',
     degree: '',
@@ -419,16 +419,16 @@ const Profile = () => {
     try {
       const userId = getId(); // Lấy user ID từ hàm getId
       const data = { ...academic, user_id: userId }; // Gắn user ID vào academic data
-  
+
       const response = await axios.post('http://localhost:5000/api/academic/add', data, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực
         },
       });
-  
+
       // Log phản hồi để kiểm tra
       console.log('Server response:', response.data);
-  
+
       if (response.data.success) {
         alert('Thông tin học vấn đã được lưu!');
       } else {
@@ -450,7 +450,7 @@ const Profile = () => {
       }
     }
   };
-  
+
 
 
   ///////////////////////////////END FORM THÔNG TIN HỌC VẤN////////////////////////
@@ -458,18 +458,18 @@ const Profile = () => {
 
 
   ///////////////////////////////FORM MỤC TIÊU NGHỀ NGHIỆP////////////////////////
-  const [isEditJobGoalOpen, setIsEditJobGoalOpen] = useState(false);
+  //const [isEditJobGoalOpen, setIsEditJobGoalOpen] = useState(false);
 
   // Hàm mở form
-  const handleJobGoalClick = () => {
-    setIsEditJobGoalOpen(true);
-  };
+  //const handleJobGoalClick = () => {
+  //   setIsEditJobGoalOpen(true);
+  // };
 
   // Hàm đóng form và reset trạng thái
-  const handleCloseJobGoalEdit = () => {
-    setIsEditJobGoalOpen(false);
-    setEditorState(EditorState.createEmpty()); // Reset nội dung editor
-  };
+  // const handleCloseJobGoalEdit = () => {
+  //   setIsEditJobGoalOpen(false);
+  //   setEditorState(EditorState.createEmpty()); // Reset nội dung editor
+  // };
 
 
   ///////////////////////////////END FORM MỤC TIÊU NGHỀ NGHIỆP////////////////////////
@@ -515,6 +515,8 @@ const Profile = () => {
   const [isEditExpOpen, setIsEditExpOpen] = useState(false);
   const [editorState, setEditorState] = useState(EditorState.createEmpty()); // Mô tả công việc
   const [isChecked, setIsChecked] = useState(false); // Trạng thái checkbox
+
+
   const [formData, setFormData] = useState({
     position: "", // Chức danh
     company: "", // Công ty
@@ -562,9 +564,89 @@ const Profile = () => {
   const handleChange = () => {
     setIsChecked(!isChecked);
   };
+  const [experienceList, setExperienceList] = useState([]); // Danh sách kinh nghiệm
+  const [formDataexperience, setFormDataexperience] = useState({
+    position: "",
+    company: "",
+    describe: "",
+    startMonth: "",
+    endMonth: "",
+  });
+
+  const [isEditExpOpenxperience, setIsEditExpOpenxperience] = useState(false); // Trạng thái mở form
+  const [isCurrentJob, setIsCurrentJob] = useState(false);
+  const handleAddExperience = () => {
+    setIsEditExpOpen(true);
+    setFormData({
+      position: "",
+      company: "",
+      describe: "",
+      startMonth: "",
+      endMonth: "",
+    });
+    setIsCurrentJob(false); // Reset checkbox
+  };
+  const handleSaveExperience = async () => {
+    try {
+      const userId = getId(); // Lấy ID người dùng
+      const data = { ...formDataexperience, userId };
+
+      const response = await axios.post('http://localhost:5000/api/experience/add', data, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (response.data.success) {
+        alert('Kinh nghiệm làm việc đã được lưu!');
+        fetchExperiences(); // Tải lại danh sách kinh nghiệm sau khi lưu
+        handleCloseExperienceForm();
+        
+      } else {
+        alert(`Thông báo : ${response.data.message || "Không xác định"}`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Lỗi khi lưu kinh nghiệm. Vui lòng thử lại.');
+    }
+  };
+
+
+  const handleCloseExperienceForm = () => {
+    setIsEditExpOpen(false);
+  };
+  const handleInputChangeExperience = (e) => {
+    const { name, value } = e.target;
+    setFormDataexperience((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCheckboxChange = () => {
+    setIsChecked(!isChecked);
+    setFormDataexperience((prev) => ({
+      ...prev,
+      endMonth: !isChecked ? null : "",
+    }));
+  };
+
   ///////////////////////////////END FORM KINH NGHIỆM////////////////////////
 
+  const fetchExperiences = async () => {
+    try {
+      const userId = getId();
+      const response = await axios.get(`http://localhost:5000/api/experience/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
 
+      setExperienceList(response.data.experiences || []);
+    } catch (error) {
+      console.log('chưa có king nghiệm nào!')
+    }
+  }
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -606,28 +688,29 @@ const Profile = () => {
         setLoading(false);
       }
     };
+
     const fetchAcademicData = async () => {
       try {
         const userId = getId(); // Lấy userId từ frontend
         if (!userId) {
           throw new Error('User ID không tồn tại');
         }
-    
+
         const token = localStorage.getItem('token');
         if (!token) {
           throw new Error('Token không hợp lệ hoặc đã hết hạn');
         }
-    
+
         const response = await axios.get(`http://localhost:5000/api/academic/${userId}`, {
           headers: {
             'Authorization': `Bearer ${token}`, // Token xác thực
           },
         });
-    
+
         if (response.data.length === 0) {
           throw new Error('Không có thông tin học vấn cho người dùng này');
         }
-    
+
         setAcademicData(response.data); // Lưu dữ liệu học vấn vào state
       } catch (err) {
         setError(err.message); // Ghi nhận lỗi nếu có
@@ -636,11 +719,56 @@ const Profile = () => {
         setLoading(false); // Xong, không còn loading nữa
       }
     };
-    
+    const fetchSkills = async () => {
+      try {
+        const userId = getId();  
+        const response = await axios.get(`http://localhost:5000/api/profiles/skills/${userId}`);
+        setSkills(response.data.skills);  
+      } catch (error) {
+        console.error("Error fetching skills:", error);
+      }
+    };
+
+    fetchExperiences();
     fetchProfile();
     fetchAcademicData();
     fetchUserProfile()
+    fetchSkills();
   }, [idnd]);
+  // form ky năng
+  const [skills, setSkills] = useState([]);  // Lưu trữ danh sách kỹ năng
+  const [skilluer, setSkillUser] = useState('');  // Lưu trữ giá trị nhập vào
+
+  const handleSkillChange = (e) => {
+    setSkillUser(e.target.value);  // Cập nhật giá trị nhập vào vào state skilluer
+  };
+
+  const handleSubmitSkill = async (e) => {
+    e.preventDefault();
+    console.log('Lưu kỹ năng đã được nhấn');
+
+    const userId = getId();  // Lấy userId từ session hoặc context
+
+    if (skilluer && !skills.includes(skilluer)) {
+      const newSkills = [...skills, skilluer];  // Thêm kỹ năng mới vào danh sách
+      setSkills(newSkills);  // Cập nhật state kỹ năng
+
+      try {
+        // Gửi yêu cầu API để cập nhật kỹ năng vào profile người dùng
+        await axios.put('http://localhost:5000/api/profiles/update-skills', {
+          userId: userId,
+          skills: newSkills,
+        });
+        window.location.reload();
+        // Reset giá trị skilluer sau khi lưu thành công
+        setSkillUser('');
+      } catch (error) {
+        console.error("Error updating skills:", error);
+      }
+    } else {
+      console.log("Kỹ năng trống hoặc đã có trong danh sách");
+    }
+  };
 
   return (
     <div className='my-profile'>
@@ -1177,25 +1305,25 @@ const Profile = () => {
           <FaEdit />
         </button>
         <div className="user-info-details">
-        {academicData.length > 0 ? (
-          academicData.map((academic, academic_id) => (
-          <div key={academic_id} className='edu-info'>
-            <div className="edu-card-header">
-              <h3 className="user-basic-info-header">Thông tin học vấn</h3>
-              <h3 className="edu-title">{academic?.school_name}</h3>
-              <p className="edu-subtitle">{academic?.industry}</p>
-            </div>
-            <div className="edu-card-body">
-              <ul className="edu-achievements">
-                <li>
-                  <FaMedal className="edu-icon" />
-                  <span>{academic?.start_date} - {academic?.end_date}</span>
-                </li>
-                <li>
-                  <FaBook className="edu-icon" />
-                  <span>{academic?.achievements}</span>
-                </li>
-                {/*
+          {academicData.length > 0 ? (
+            academicData.map((academic, academic_id) => (
+              <div key={academic_id} className='edu-info'>
+                <div className="edu-card-header">
+                  <h3 className="user-basic-info-header">Thông tin học vấn</h3>
+                  <h3 className="edu-title">{academic?.school_name}</h3>
+                  <p className="edu-subtitle">{academic?.industry}</p>
+                </div>
+                <div className="edu-card-body">
+                  <ul className="edu-achievements">
+                    <li>
+                      <FaMedal className="edu-icon" />
+                      <span>{academic?.start_date} - {academic?.end_date}</span>
+                    </li>
+                    <li>
+                      <FaBook className="edu-icon" />
+                      <span>{academic?.achievements}</span>
+                    </li>
+                    {/*
                 <li>
                   <FaAward className="edu-icon" />
                   <span>Giải Nhì nghiên cứu khoa học bộ môn Điều khiển tự động (2020 – 2021)</span>
@@ -1213,14 +1341,14 @@ const Profile = () => {
                   <span>Sinh viên 5 tốt cấp trường (2020 – 2021)</span>
                 </li>
                 */}
-              </ul>
-                
-            </div>
-          </div>
-          ))
-        ) : (
-          <p>Không có thông tin học vấn.</p>
-        )}
+                  </ul>
+
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>Không có thông tin học vấn.</p>
+          )}
         </div>
       </div>
       {/* Form chỉnh sửa thông tin học vấn *********************************************/}
@@ -1358,7 +1486,7 @@ const Profile = () => {
       )}
 
       {/* Form mục tiêu nghề nghiệp *********************************************/}
-      <div className="user-info-card">
+      {/*<div className="user-info-card">
         <button className="user-info-edit-btn" onClick={handleJobGoalClick}>
           <FaEdit />
         </button>
@@ -1371,12 +1499,12 @@ const Profile = () => {
         </div>
       </div>
       {/* Form chỉnh sửa mục tiêu nghề nghiệp *********************************************/}
-      {isEditJobGoalOpen && (
+      {/*{isEditJobGoalOpen && (
         <>
           <div className="user-info-edit-overlay">
             <div className="user-info-edit-container">
-              {/* Header */}
-              <div className="user-info-edit-header-form">
+               Header */}
+      {/*<div className="user-info-edit-header-form">
                 <div className="user-info-edit-header">
                   <h2>Mục tiêu nghề nghiệp</h2>
                   <button className="user-info-edit-close-btn" onClick={handleCloseJobGoalEdit}>
@@ -1385,8 +1513,8 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Nội dung Form */}
-              <form className="user-info-edit-form" onSubmit={(e) => e.preventDefault()}>
+              Nội dung Form */}
+      {/*<form className="user-info-edit-form" onSubmit={(e) => e.preventDefault()}>
                 <div className="form-group">
                   <div className="textarea-wrapper">
                     <div id="achievement" className="form-textarea">
@@ -1401,8 +1529,8 @@ const Profile = () => {
                 </div>
               </form>
 
-              {/* Footer */}
-              <div className="user-info-edit-button-row">
+               Footer */}
+      {/*<div className="user-info-edit-button-row">
                 <button className="user-info-edit-save-btn" type="button" onClick={handleSave}>
                   Lưu
                 </button>
@@ -1413,34 +1541,43 @@ const Profile = () => {
             </div>
           </div>
         </>
-      )}
+
+
+      )} 
 
       {/* Form kinh nghiệm làm việc *********************************************/}
       <div className="user-info-card">
         <button className="user-info-edit-btn" onClick={handleExpClick}>
           <FaEdit />
         </button>
-        <div className="user-info-3">
-          <h3 className='user-basic-info-header'>Kinh nghiệm làm việc</h3>
-          {/* Tiêu đề công việc và công ty */}
-          <div className="card-header">
-            <div>
-              <h3 className="card-title">IT Manager</h3>
-              <p className="card-company"><FaBuilding className="company-icon" /> Công ty Công nghệ ABC</p>
+        {experienceList.length > 0 ? (
+          experienceList.map((exp) => (
+            <div key={exp._id} className="user-info-3">
+
+              <h3 className='user-basic-info-header'>Kinh nghiệm làm việc</h3>
+              {/* Tiêu đề công việc và công ty */}
+              <div className="card-header">
+                <div>
+                  <h3 className="card-title">{exp.position}</h3>
+                  <p className="card-company"><FaBuilding className="company-icon" /> {exp.company}</p>
+                </div>
+              </div>
+
+              {/* Thời gian làm việc */}
+              <div className="card-period">
+                <FaCalendarAlt className="calendar-icon" />
+                <span className="card-company">Từ Tháng {exp.startMonth} đến Tháng {exp.endMonth}</span>
+              </div>
+
+              {/* Mô tả công việc */}
+              <div className="card-description wrap-text">
+                {exp.describe}
+              </div>
             </div>
-          </div>
-
-          {/* Thời gian làm việc */}
-          <div className="card-period">
-            <FaCalendarAlt className="calendar-icon" />
-            <span className="card-company">Từ Tháng 6/2020 đến Tháng 11/2024</span>
-          </div>
-
-          {/* Mô tả công việc */}
-          <div className="card-description wrap-text">
-            Quản lý đội ngũ phát triển phần mềm và đảm bảo tiến độ dự án. Lãnh đạo đội ngũ 15 nhân viên. Phối hợp với các phòng ban để tối ưu quy trình làm việc. Đạt được tăng trưởng doanh thu 20% cho dự án.
-          </div>
-        </div>
+          ))
+        ) : (
+          <p>Chưa có kinh nghiệm làm việc nào.</p>
+        )}
       </div>
       {/* Form chỉnh sửa kinh nghiệm làm việc *********************************************/}
       {isEditExpOpen && (
@@ -1467,10 +1604,11 @@ const Profile = () => {
                     <input
                       type="text"
                       id="position"
+                      name="position"
                       className="user-info-edit-input"
                       placeholder="Nhập chức danh"
-                      value={formData.position}
-                      onChange={handleInputExpChange}
+                      value={formDataexperience.position}
+                      onChange={handleInputChangeExperience}
                     />
                   </div>
                   <div className="user-info-edit-row">
@@ -1480,10 +1618,11 @@ const Profile = () => {
                     <input
                       type="text"
                       id="company"
+                      name="company"
                       className="user-info-edit-input"
                       placeholder="Nhập công ty"
-                      value={formData.company}
-                      onChange={handleInputExpChange}
+                      value={formDataexperience.company}
+                      onChange={handleInputChangeExperience}
                     />
                   </div>
                 </div>
@@ -1496,10 +1635,11 @@ const Profile = () => {
                       <input
                         type="text"
                         id="startMonth"
+                        name="startMonth"
                         className="form-input"
                         placeholder="MM/YYYY"
-                        value={formData.startMonth}
-                        onChange={handleInputExpChange}
+                        value={formDataexperience.startMonth}
+                        onChange={handleInputChangeExperience}
                       />
                       <span className="icon-calendar">📅</span>
                     </div>
@@ -1511,11 +1651,12 @@ const Profile = () => {
                     <div className="input-wrapper">
                       <input
                         type="text"
+                        name="endMonth"
                         id="endMonth"
                         className="form-input"
                         placeholder="MM/YYYY"
-                        value={formData.endMonth}
-                        onChange={handleInputExpChange}
+                        value={formDataexperience.endMonth}
+                        onChange={handleInputChangeExperience}
                         disabled={isChecked}
                       />
                       <span className="icon-calendar">📅</span>
@@ -1527,7 +1668,7 @@ const Profile = () => {
                     <input
                       type="checkbox"
                       checked={isChecked}
-                      onChange={handleChange}
+                      onChange={handleCheckboxChange}
                       className="checkbox-input"
                     />
                     <span className="checkbox-custom"></span>
@@ -1541,8 +1682,11 @@ const Profile = () => {
                   <div className="textarea-wrapper">
                     <div id="achievement" className="form-textarea">
                       <textarea
+                        name="describe"
                         className="company-profile-des-textarea"
-                        placeholder="Nhập mô tả..."                                
+                        placeholder="Nhập mô tả..."
+                        value={formDataexperience.describe}
+                        onChange={handleInputChangeExperience}
                       ></textarea>
                     </div>
                   </div>
@@ -1550,7 +1694,7 @@ const Profile = () => {
               </form>
               {/* Footer */}
               <div className="user-info-edit-button-row">
-                <button className="user-info-edit-save-btn" type="submit">
+                <button onClick={handleSaveExperience} className="user-info-edit-save-btn" type="submit">
                   Lưu
                 </button>
                 <button className="user-info-edit-cancel-btn" type="button" onClick={handleCloseExpEdit}>
@@ -1571,12 +1715,16 @@ const Profile = () => {
           <h3 className='user-basic-info-header'>Kỹ năng</h3>
           <div>
             <ul className="skills-list">
-              {skills.map((skill, index) => (
+            {skills.length > 0 ? (
+              skills.map((skill, index) => (
                 <li key={index} className="skill-item">
                   <FaCheckCircle className="skill-icon" />
                   {skill}
                 </li>
-              ))}
+              ))
+            ) : (
+              <li>Không có kỹ năng nào được thêm vào.</li>
+            )}
             </ul>
           </div>
         </div>
@@ -1605,24 +1753,25 @@ const Profile = () => {
                   <div className="user-info-edit-col-add">
                     <input
                       type="text"
-                      id="skill"
+                      id="skilluer"
+                      name="skilluer"
                       className="user-info-edit-input"
                       placeholder="Nhập kỹ năng"
-                      value={skill}  // Dùng state để điều khiển giá trị nhập vào
-                      onChange={handleInputSkillChange}  // Cập nhật giá trị khi người dùng gõ
+                      value={skilluer}  // Dùng state skilluer để điều khiển giá trị nhập vào
+                      onChange={handleSkillChange}  // Cập nhật giá trị khi người dùng gõ
                     />
-                    <button className="user-info-edit-save-btn" type="submit">
+                    {/*<button className="user-info-edit-save-btn" type="submit">
                       Thêm
-                    </button>
+                    </button>*/}
                   </div>
                 </div>
 
                 {/* Hiển thị danh sách kỹ năng đã thêm */}
-                {skillsList.length > 0 && (
+                {skills.length > 0 && (
                   <div className="skills-list-add">
                     <h3>Kỹ năng đã thêm:</h3>
                     <ul>
-                      {skillsList.map((item, index) => (
+                      {skills.map((item, index) => (
                         <li key={index}>{item}</li>  // Hiển thị từng kỹ năng trong danh sách
                       ))}
                     </ul>
@@ -1632,7 +1781,7 @@ const Profile = () => {
 
               {/* Footer (Save/Cancel) */}
               <div className="user-info-edit-button-row">
-                <button className="user-info-edit-save-btn" type="submit">
+                <button onClick={handleSubmitSkill} className="user-info-edit-save-btn" type="submit">
                   Lưu
                 </button>
                 <button className="user-info-edit-cancel-btn" type="button" onClick={handleCloseSkillEdit}>
