@@ -1539,13 +1539,11 @@ const Profile = () => {
                     Mô tả <span className="user-info-edit-required">*</span>
                   </label>
                   <div className="textarea-wrapper">
-                    <div id="description" className="form-textarea">
-                      <Editor
-                        editorState={editorState}
-                        onEditorStateChange={setEditorState}
-                        toolbarHidden={false}
-                        placeholder="Nhập mô tả..."
-                      />
+                    <div id="achievement" className="form-textarea">
+                      <textarea
+                        className="company-profile-des-textarea"
+                        placeholder="Nhập mô tả..."                                
+                      ></textarea>
                     </div>
                   </div>
                 </div>
