@@ -131,8 +131,6 @@ router.post('/profile', async (req, res) => {
   }
 });
 
-
-
 router.get('/list', authenticateToken, async (req, res) => {
   try {
     // Find the profile for the logged-in user using their userId
@@ -166,7 +164,7 @@ router.get('/job/:userId', async (req, res) => {
 });
 
 // GET profile by ID
-router.get('/:user_id', authenticateToken, async (req, res) => {
+router.get('/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
     const profile = await Profile.findOne({ user_id }).populate('user_id'); // Populate if needed
@@ -267,5 +265,18 @@ router.get('/profile', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+router.post('/follower-profiles', async (req, res) => {
+  try {
+    const { userIds } = req.body; // Lấy danh sách userId từ yêu cầu
+    console.log("follower: ", userIds);
+    const profiles = await Profile.find({ user_id: { $in: userIds } }); // Tìm tất cả profile theo danh sách userId
+    res.json(profiles); // Trả về danh sách profiles
+  } catch (error) {
+    console.error('Error fetching profiles:', error);
+    res.status(500).json({ message: 'Failed to fetch profiles.' });
+  }
+});
+
 
 module.exports = router;

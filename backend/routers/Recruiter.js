@@ -28,14 +28,14 @@ router.post('/register', async (req, res) => {
         // Mã hóa mật khẩu
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Tạo người dùng mới
+        // Tạo người dùng mới với các giá trị trống nếu không được cung cấp
         const user = new User({
-            username,
+            username: username || '',
             password: hashedPassword,
             role: 'recruiter', // Mặc định là recruiter
-            email,
-            phone,
-            avatar: null,
+            email: email || '',
+            phone: phone || '',
+            avatar: '', // Set trống
             created_at: new Date(),
             updated_at: new Date(),
         });
@@ -43,24 +43,49 @@ router.post('/register', async (req, res) => {
         // Lưu người dùng
         const savedUser = await user.save();
 
-        // Tạo profile
+        // Tạo profile với các giá trị trống nếu không được cung cấp
         const profile = new Profile({
             user_id: savedUser._id,
-            first_name,
-            last_name,
-            email,
-            phone,
+            first_name: first_name || '',
+            last_name: last_name || '',
+            email: email || '',
+            phone: phone || '',
+            gender: '',
+            nationality: '',
+            date_of_birth: null,
+            location: '',
+            specific_address: '',
+            job_title: '',
+            job_level: '',
+            current_industry: '',
+            current_field: '',
+            years_of_experience: 0,
+            current_salary: 0,
+            desired_work_location: '',
+            desired_salary: 0,
+            education: '',
+            experience: [],
+            skills: [],
+            cv_files: [],
         });
 
         // Lưu profile
         await profile.save();
 
-        // Tạo company
+        // Tạo company với các giá trị trống nếu không được cung cấp
         const company = new Company({
             user_id: savedUser._id,
-            company_name,
-            industry,
-            location,
+            company_name: company_name || '',
+            industry: industry || '',
+            location: location || '',
+            description: '',
+            specific_address: '',
+            website: '',
+            logo: '',
+            banner: '',
+            quymo: '',
+            created_at: new Date(),
+            updated_at: new Date(),
         });
 
         // Lưu company
@@ -73,5 +98,6 @@ router.post('/register', async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
+
 
 module.exports = router;

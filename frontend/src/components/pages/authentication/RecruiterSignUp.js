@@ -2,6 +2,44 @@ import '../../../styles/signin.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const locations = {
+    "Việt Nam": {
+        "Hà Nội": ["Quận Ba Đình", "Quận Hoàn Kiếm", "Quận Đống Đa", "Quận Cầu Giấy", "Quận Tây Hồ"],
+        "Hồ Chí Minh": [
+            "Huyện Bình Chánh",
+            "Huyện Cần Giờ",
+            "Huyện Củ Chi",
+            "Huyện Hóc Môn",
+            "Huyện Nhà Bè",
+            "Quận 1",
+            "Quận 2",
+            "Quận 3",
+            "Quận 7",
+            "Quận 9"
+        ],
+        "Đà Nẵng": ["Quận Hải Châu", "Quận Cẩm Lệ", "Quận Liên Chiểu", "Quận Ngũ Hành Sơn", "Quận Sơn Trà"],
+        "Cần Thơ": ["Quận Ninh Kiều", "Quận Bình Thủy", "Quận Cái Răng", "Huyện Phong Điền"]
+    },
+    "Afghanistan": {
+        "Kabul": ["District 1", "District 2", "District 3", "District 4"],
+        "Herat": ["Guzara", "Kohsan", "Obeh"],
+        "Kandahar": ["Daman", "Panjwai", "Spin Boldak"]
+    },
+    "Albania": {
+        "Tirana": ["Kashar", "Farkë", "Peza", "Zall-Herr"],
+        "Durrës": ["Ishëm", "Rrashbull", "Sukth"]
+    },
+    "Algeria": {
+        "Algiers": ["Bab El Oued", "El Madania", "Hussein Dey"],
+        "Oran": ["El Kerma", "Es Senia", "Bir El Djir"],
+        "Constantine": ["Beni Hamidane", "Didouche Mourad", "Hamma Bouziane"]
+    },
+    "American Samoa": {
+        "Tutuila": ["Pago Pago", "Tafuna", "Nu'uuli"],
+        "Manu'a Islands": ["Ta'u", "Ofu", "Olosega"]
+    }
+};
+
 export default function RecruiterSignUp() {
     const [isRightPanelActive, setIsRightPanelActive] = useState(true); // Đặt mặc định là true để Sign Up hiển thị trước
     const navigate = useNavigate();
@@ -71,8 +109,45 @@ export default function RecruiterSignUp() {
             }
         } catch (error) {
             console.error("Đã xảy ra lỗi khi đăng ký:", error);
-//            alert("Đăng ký thất bại!");
+            //            alert("Đăng ký thất bại!");
         }
+    };
+
+    // Trạng thái cho ô địa chỉ 1
+    const [currentLevel1, setCurrentLevel1] = useState(locations); // Cấp hiện tại
+    const [breadcrumbs1, setBreadcrumbs1] = useState([]); // Lưu đường dẫn đã chọn
+    const [selectedValue1, setSelectedValue1] = useState(""); // Giá trị đã chọn
+    const [isMenuOpen1, setIsMenuOpen1] = useState(false); // Trạng thái mở menu
+
+    // Hàm xử lý cho ô địa chỉ 1
+    const handleSelect1 = (key) => {
+        if (typeof currentLevel1[key] === "object") {
+            setBreadcrumbs1([...breadcrumbs1, key]); // Cập nhật breadcrumbs
+            setCurrentLevel1(currentLevel1[key]); // Chuyển xuống cấp tiếp theo
+        } else {
+            const locationValue = [...breadcrumbs1, key].join(", "); // Tính giá trị cuối cùng
+            setSelectedValue1(locationValue); // Hiển thị giá trị đã chọn trong dropdown
+            setIsMenuOpen1(false); // Đóng menu
+
+            // Cập nhật giá trị location vào form
+            setForm((prevForm) => ({
+                ...prevForm,
+                location: locationValue, // Lưu vào form
+            }));
+        }
+    };
+
+    const handleBack1 = () => {
+        if (breadcrumbs1.length > 0) {
+            const newBreadcrumbs = breadcrumbs1.slice(0, -1); // Loại bỏ cấp cuối
+            const newLevel = newBreadcrumbs.reduce((acc, key) => acc[key], locations); // Lấy lại dữ liệu cấp trước
+            setBreadcrumbs1(newBreadcrumbs);
+            setCurrentLevel1(newLevel);
+        }
+    };
+
+    const toggleMenu1 = () => {
+        setIsMenuOpen1(!isMenuOpen1);
     };
 
     const handleChange = (e) => {
@@ -82,7 +157,7 @@ export default function RecruiterSignUp() {
             [name]: type === 'checkbox' ? checked : value,
         });
     };
-    
+
 
     return (
         <div className='auth-body'>
@@ -151,9 +226,30 @@ export default function RecruiterSignUp() {
                             <label className="infield-label"></label>
                         </div>
                         <div className="infield">
-                            <input className="infield-input" type="text" name='location' value={form.location} placeholder="Location"
-                                onChange={handleChange}
-                                required />
+                            <div className="infield-select-input" onClick={toggleMenu1}>
+                                {selectedValue1 || "Location"}
+                            </div>
+                            {isMenuOpen1 && (
+                                <div className="infield-select-input">
+                                    <div className="infield-input-edit-breadcrumbs">
+                                        {breadcrumbs1.length > 0 && (
+                                            <button onClick={handleBack1}>&lt;</button>
+                                        )}
+                                        <span>{breadcrumbs1.join(", ") || "Location"}</span>
+                                    </div>
+                                    <ul className="user-info-edit-options">
+                                        {Object.keys(currentLevel1).map((key) => (
+                                            <li
+                                                key={key}
+                                                onClick={() => handleSelect1(key)}
+                                                className="user-info-edit-option"
+                                            >
+                                                {key}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                             <label className="infield-label"></label>
                         </div>
                         <button onClick={handleSubmit} className='auth-button'>Sign Up</button>

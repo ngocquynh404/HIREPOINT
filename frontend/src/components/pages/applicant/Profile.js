@@ -271,6 +271,15 @@ const Profile = () => {
     setCurrentMonth(newMonth);
   };
 
+  const handleMonthChange = (month) => {
+    const newMonth = new Date(currentMonth.getFullYear(), month, 1);
+    setCurrentMonth(newMonth);
+  };
+  
+  const handleYearChange = (year) => {
+    const newYear = new Date(year, currentMonth.getMonth(), 1);
+    setCurrentMonth(newYear);
+  };  
 
   const [selectedGender, setSelectedGender] = useState(""); // Giới tính được chọn
 
@@ -928,11 +937,38 @@ const Profile = () => {
                     {isCalendarOpen && (
                       <div className="calendar-dropdown">
                         <div className="calendar-header">
-                          <button onClick={() => changeMonth(-1)}>&lt;</button>
+                          <button type="button" onClick={() => changeMonth(-1)}>&lt;</button>
+
                           <span>
-                            {currentMonth.toLocaleString("default", { month: "long", year: "numeric" })}
+                            {/* Dropdown chọn tháng */}
+                            <select
+                              value={currentMonth.getMonth()}
+                              onChange={(e) => handleMonthChange(Number(e.target.value))}
+                            >
+                              {Array.from({ length: 12 }).map((_, index) => (
+                                <option key={index} value={index}>
+                                  {new Date(0, index).toLocaleString("default", { month: "long" })}
+                                </option>
+                              ))}
+                            </select>
+
+                            {/* Dropdown chọn năm */}
+                            <select
+                              value={currentMonth.getFullYear()}
+                              onChange={(e) => handleYearChange(Number(e.target.value))}
+                            >
+                              {Array.from({ length: 1001 }).map((_, index) => {
+                                const year = currentMonth.getFullYear() - 500 + index;
+                                return (
+                                  <option key={year} value={year}>
+                                    {year}
+                                  </option>
+                                );
+                              })}
+                            </select>
                           </span>
-                          <button onClick={() => changeMonth(1)}>&gt;</button>
+
+                          <button type="button" onClick={() => changeMonth(1)}>&gt;</button>
                         </div>
 
                         <div className="calendar-grid">

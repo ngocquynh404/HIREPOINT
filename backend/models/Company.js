@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 
 const companySchema = new mongoose.Schema({
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   company_name: { type: String, required: true },
   description: { type: String },
   industry: { type: String },
@@ -9,9 +10,12 @@ const companySchema = new mongoose.Schema({
   specific_address: { type: String },
   website: { type: String },
   logo: { type: String },
+  banner: {type: String},
   quymo: { type: String },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
 }); 
 
-module.exports = mongoose.model('Company', companySchema);
+const Company = mongoose.model('Company', companySchema);
+
+module.exports = Company;

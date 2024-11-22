@@ -6,43 +6,52 @@ const Feedback = require('../models/Feedback');
 const authenticateToken = require('../middleware/authenticateToken');
 
 // CREATE - Tạo công việc mới
-router.post('/', authenticateToken, async (req, res) => {
+// Trong API server
+router.post('/', async (req, res) => {
   try {
-    const userId = req.userId;  // Lấy userId từ request (đã được gán trong middleware)
-    const company_id = req.body.company_id;
+    console.log("data insert", req.body);
+
+    const { employer_id, company_id, title, description, requirements, skills, qualifications, salary, job_type, vacancy, location, interview_location, note, application_deadline, benefits, status } = req.body;
 
     // Kiểm tra xem công ty có tồn tại không
     const company = await Company.findById(company_id);
+    console.log("company id: ", company_id);
+
     if (!company) {
       return res.status(400).json({ message: 'ID công ty không hợp lệ' });
     }
 
-    // Tạo công việc mới với thông tin từ request body
+    // Tạo công việc mới
     const job = new Job({
-      employer_id: userId,  // Sử dụng userId từ token
+      employer_id,
       company_id,
-      title: req.body.title,
-      description: req.body.description,
-      requirements: req.body.requirements,
-      skills: req.body.skills,
-      qualifications: req.body.qualifications,
-      salary: req.body.salary,
-      job_type: req.body.job_type,
-      vacancy: req.body.vacancy,
-      location: req.body.location,
-      note: req.body.note,
-      status: req.body.status || 'open',  // Thêm trạng thái nếu có
-      application_deadline: req.body.application_deadline,  // Thêm hạn nộp đơn nếu có
+      title,
+      description,
+      requirements,
+      skills,
+      qualifications,
+      salary,
+      job_type,
+      vacancy,
+      location,
+      interview_location,
+      note,
+      status: status || 'open',
+      application_deadline,
+      benefits,
     });
+
+    console.log("job: ", job);
 
     // Lưu công việc vào cơ sở dữ liệu
     await job.save();
     res.status(201).json({ message: 'Tạo công việc thành công', job });
   } catch (error) {
-    console.error('Error creating job:', error);  // Log lỗi chi tiết
+    console.error('Error creating job:', error);
     res.status(500).json({ message: 'Lỗi server', error });
   }
 });
+
 
 // READ - Lấy tất cả công việc
 router.get('/', async (req, res) => {
@@ -105,6 +114,19 @@ router.get('/filter', async (req, res) => {
 });
 
 
+//load danh sách công việc
+// READ - Lấy tất cả công việc (chỉ danh sách, không filter, không phân trang)
+router.get('/all', async (req, res) => {
+  try {
+    const jobs = await Job.find().populate('company_id'); // Lấy tất cả công việc và thông tin công ty
+    res.json(jobs); // Trả về danh sách công việc
+  } catch (error) {
+    console.error('Error fetching all jobs:', error);
+    res.status(500).json({ message: 'Lỗi server', error });
+  }
+});
+
+
 // READ - Lấy thông tin chi tiết công việc theo ID
 router.get('/:id', async (req, res) => {
   try {
@@ -118,10 +140,12 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error });
   }
 });
+
 //lay danh sach cong viẹc của 1 cong ty 
 router.get('/jobs-by-company/:companyId', async (req, res) => {
   try {
     const { companyId } = req.params; // Lấy companyId từ params
+    console.log("id company: ", companyId);
 
     // Tìm tất cả các công việc có company_id khớp với companyId
     const jobs = await Job.find({ company_id: companyId });
@@ -133,6 +157,7 @@ router.get('/jobs-by-company/:companyId', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách công việc.' });
   }
 });
+
 // UPDATE - Cập nhật công việc
 router.put('/:id', async (req, res) => {
   try {
@@ -140,6 +165,9 @@ router.put('/:id', async (req, res) => {
     if (!job) return res.status(404).json({ message: 'Công việc không tồn tại' });
 
     const oldJobData = { ...job.toObject() }; // Store the current job data for comparison
+    console.log("oldJobData: ", oldJobData);
+    console.log("req.body: ", req.body);
+    console.log("job: ", job);
 
     // Cập nhật các trường công việc
     job.title = req.body.title || job.title;
@@ -151,43 +179,13 @@ router.put('/:id', async (req, res) => {
     job.job_type = req.body.job_type || job.job_type;
     job.vacancy = req.body.vacancy || job.vacancy;
     job.location = req.body.location || job.location;
+    job.interview_location = req.body.interview_location || job.interview_location;
     job.note = req.body.note || job.note;
     job.status = req.body.status || job.status;
     job.application_deadline = req.body.application_deadline || job.application_deadline;
     job.benefits = req.body.benefits || job.benefits; // Assume benefits is a new field
 
     await job.save();
-
-    // Check if certain fields (salary, application_deadline, or benefits) were changed
-    const changedFields = [];
-    if (oldJobData.salary !== job.salary) changedFields.push('salary');
-    if (oldJobData.application_deadline !== job.application_deadline) changedFields.push('application_deadline');
-    if (oldJobData.benefits !== job.benefits) changedFields.push('benefits');
-
-    if (changedFields.length > 0) {
-      // Find users who saved this job
-      const savedJobs = await SavedJob.find({ job_id: job._id }).populate('user_id');
-      const notificationMessage = `Công việc "${job.title}" đã có thay đổi: ${changedFields.join(', ')}`;
-
-      // Create and send notifications to users who saved the job
-      savedJobs.forEach(async (savedJob) => {
-        const notification = new Notification({
-          user_id: savedJob.user_id._id,
-          message: notificationMessage,
-          created_at: new Date(),
-          read_status: false,
-        });
-
-        await notification.save();
-
-        // Send real-time notification via Socket.IO
-        req.io.to(savedJob.user_id._id.toString()).emit('notification', {
-          message: notificationMessage,
-          jobTitle: job.title,
-        });
-      });
-    }
-
     res.json({ message: 'Cập nhật công việc thành công', job });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error });

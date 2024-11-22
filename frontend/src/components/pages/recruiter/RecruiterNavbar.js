@@ -1,12 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../../styles/recruiternavbar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faBuilding, faBriefcase, faBell, faCogs, faSignOutAlt, faQuestionCircle, faComments } from '@fortawesome/free-solid-svg-icons';
 import { logout } from "../../../libs/isAuth";
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { getId } from '../../../libs/isAuth';
 
 export default function RecruiterNavbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [user, setUser] = useState(null); // Lưu trữ dữ liệu người dùng
+    const [profile, setProfile] = useState(null); // Lưu trữ dữ liệu người dùng
+    const [error, setError] = useState(null); // Lưu trữ lỗi (nếu có)
+    const [loading, setLoading] = useState(true);
+
+    const userId = getId();
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const token = localStorage.getItem('token'); // Lấy token từ localStorage
+
+                // Kiểm tra nếu không có token
+                if (!token) {
+                    setError('Token is missing, please login again.');
+                    setLoading(false);
+                    return;
+                }
+
+                const responseUser = await axios.get('http://localhost:5000/api/users/me', {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Gửi token trong header
+                    },
+                });
+
+                const responseProfile = await axios.get(`http://localhost:5000/api/profiles/${userId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Gửi token trong header
+                    },
+                });
+
+                setUser(responseUser.data); // Lưu dữ liệu người dùng
+                setProfile(responseProfile.data); // Lưu dữ liệu người dùng
+                setLoading(false);
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+                setError('Failed to fetch user data.');
+                setLoading(false);
+            }
+        };
+
+        fetchUserProfile();
+    }, []);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -19,7 +64,7 @@ export default function RecruiterNavbar() {
         navigate('/');
     };
 
-    return (
+    return ( 
         <div className="recruiter-profile">
             {/* User Icon */}
             <div className="recruiter-notification-buttons">
@@ -39,8 +84,8 @@ export default function RecruiterNavbar() {
                 <div className="recruiter-menu">
                     <div className="recruiter-info">
                         <div className='recruiter-info-detail'>
-                            <h4 className="recruiter-name">Ma Thị Ngọc Quỳnh</h4>
-                            <p className="recruiter-email">ngocquynh141@gmail.com</p>
+                            <h4 className="recruiter-name">{profile?.first_name} {profile?.last_name}</h4>
+                            <p className="recruiter-email">{user?.email}</p>
                         </div>
                         <button className="recruiter-update-button">Cập nhật hồ sơ</button>
                     </div>
