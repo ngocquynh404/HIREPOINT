@@ -43,6 +43,7 @@ router.get('/followedcompanies', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch followed companies.' });
   }
 });
+
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const userId = req.userId; // Lấy userId từ middleware authenticateToken
@@ -106,6 +107,26 @@ router.get('/allcompanies', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Lỗi server khi lấy danh sách công ty', error });
   }
 });
+
+// Route để lấy danh sách các userId theo dõi một công ty
+router.get('/company/:companyId/followers', async (req, res) => {
+  try {
+    const { companyId } = req.params;  // Lấy companyId từ tham số URL
+
+    console.log("company id: ", companyId);
+    // Tìm tất cả bản ghi theo dõi công ty này, chỉ lấy user_id
+    const followedUsers = await FollowedCompany.find({ company_id: companyId }).select('user_id');  // Sử dụng .select để chỉ lấy user_id
+
+    // Lấy danh sách user_id từ các bản ghi
+    const userIds = followedUsers.map(followed => followed.user_id);  // Chỉ lấy user_id
+
+    res.json({ userIds });
+  } catch (error) {
+    console.error('Error fetching followed users:', error);
+    res.status(500).json({ message: 'Failed to fetch followers.' });
+  }
+});
+
 
 
 module.exports = router;  // Only export once

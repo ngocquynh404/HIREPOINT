@@ -9,7 +9,7 @@ const ProfileSchema = new mongoose.Schema({
   phone: { type: String },
   nationality: { type: String },
   date_of_birth: { type: Date },
-  location: { type: String },
+  location: { type: String }, 
   specific_address: { type: String },
   job_title: { type: String },
   job_level: { type: String },

@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faUserCircle,
@@ -27,35 +27,36 @@ const ApplicantDashboard = () => {
     const toggleSidebar = () => {
         setIsCollapsed(!isCollapsed);
     };
+    
     useEffect(() => {
         const fetchUserProfile = async () => {
-          try {
-            const token = localStorage.getItem('token'); // Lấy token từ localStorage
-    
-            // Kiểm tra nếu không có token
-            if (!token) {
-              setError('Token is missing, please login again.');
-              setLoading(false);
-              return;
+            try {
+                const token = localStorage.getItem('token'); // Lấy token từ localStorage
+
+                // Kiểm tra nếu không có token
+                if (!token) {
+                    setError('Token is missing, please login again.');
+                    setLoading(false);
+                    return;
+                }
+
+                const response = await axios.get('http://localhost:5000/api/users/me', {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Gửi token trong header
+                    },
+                });
+
+                setUser(response.data); // Lưu dữ liệu người dùng
+                setLoading(false);
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+                setError('Failed to fetch user data.');
+                setLoading(false);
             }
-    
-            const response = await axios.get('http://localhost:5000/api/users/me', {
-              headers: {
-                Authorization: `Bearer ${token}`, // Gửi token trong header
-              },
-            });
-    
-            setUser(response.data); // Lưu dữ liệu người dùng
-            setLoading(false);
-          } catch (err) {
-            console.error('Error fetching user data:', err);
-            setError('Failed to fetch user data.');
-            setLoading(false);
-          }
         };
-    
-        fetchUserProfile(); 
-      }, []);
+
+        fetchUserProfile();
+    }, []);
 
     const renderContent = () => {
         switch (activeMenu) {

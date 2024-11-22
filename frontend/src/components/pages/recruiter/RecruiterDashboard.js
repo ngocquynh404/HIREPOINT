@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faUserCircle,
@@ -14,9 +14,17 @@ import '../../../styles/recruiterdashboard.css';
 import Profile from './Profile';
 import MyCompany from './MyCompany';
 import MyJob from './MyJob';
+import CompanyProfile from './CompanyProfile';
 import JobNotificationManager from './JobNotificationManager';
+import axios from 'axios';
+import { getId } from '../../../libs/isAuth';
+import JobRecruitment from './JobRecruitment';
 
 const RecruiterDashboard = () => {
+    const [user, setUser] = useState(null); // Lưu trữ dữ liệu người dùng
+    const [profile, setProfile] = useState(null); // Lưu trữ dữ liệu người dùng
+    const [error, setError] = useState(null); // Lưu trữ lỗi (nếu có)
+    const [loading, setLoading] = useState(true);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [activeMenu, setActiveMenu] = useState('dashboard'); // Trạng thái theo dõi menu đang chọn
 
@@ -24,16 +32,51 @@ const RecruiterDashboard = () => {
         setIsCollapsed(!isCollapsed);
     };
 
+    const userId = getId();
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const token = localStorage.getItem('token'); // Lấy token từ localStorage
+
+                // Kiểm tra nếu không có token
+                if (!token) {
+                    setError('Token is missing, please login again.');
+                    setLoading(false);
+                    return;
+                }
+
+                const responseUser = await axios.get('http://localhost:5000/api/users/me', {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Gửi token trong header
+                    },
+                });
+
+                const responseProfile = await axios.get(`http://localhost:5000/api/profiles/${userId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Gửi token trong header
+                    },
+                });
+
+                setUser(responseUser.data); // Lưu dữ liệu người dùng
+                setProfile(responseProfile.data); // Lưu dữ liệu người dùng
+                setLoading(false);
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+                setError('Failed to fetch user data.');
+                setLoading(false);
+            }
+        };
+
+        fetchUserProfile();
+    }, []);
+
     const renderContent = () => {
         switch (activeMenu) {
-            case 'profile':
-                return <Profile />;
-            case 'dashboard':
-                return <h2>Tổng Quan</h2>;
-            case 'company':
-                return <MyCompany />;
+            case 'company_profile':
+                return <CompanyProfile />;
             case 'jobs':
-                return <MyJob />;
+                return <JobRecruitment />;
             case 'alerts':
                 return <JobNotificationManager />
             case 'settings':
@@ -50,9 +93,9 @@ const RecruiterDashboard = () => {
                     {!isCollapsed && (
                         <div className="recruiter-dashboard-profile">
                             <div className="recruiter-dashboard-user-info">
-                                <FontAwesomeIcon icon={faUserCircle} className="recruiter-dashboard-avatar-icon" />
-                                <h3 className="recruiter-dashboard-name">Ma Thị Ngọc Quỳnh</h3>
-                                <p className="recruiter-dashboard-role">IT Manager</p>
+                                <img src={user?.avatar} className="recruiter-dashboard-avatar-icon" />
+                                <h3 className="recruiter-dashboard-name">{profile?.first_name} {profile?.last_name}</h3>
+                                <p className="recruiter-dashboard-role">{user?.email}</p>
                             </div>
                         </div>
                     )}
@@ -75,19 +118,11 @@ const RecruiterDashboard = () => {
                     </a>
                     <a
                         href="#"
-                        className={`recruiter-dashboard-menu-item ${activeMenu === 'profile' ? 'active' : ''}`}
-                        onClick={() => setActiveMenu('profile')}
+                        className={`recruiter-dashboard-menu-item ${activeMenu === 'company_profile' ? 'active' : ''}`}
+                        onClick={() => setActiveMenu('company_profile')}
                     >
                         <FontAwesomeIcon icon={faFileAlt} />
                         {!isCollapsed && <span>Hồ Sơ Công ty</span>}
-                    </a>
-                    <a
-                        href="#"
-                        className={`recruiter-dashboard-menu-item ${activeMenu === 'company' ? 'active' : ''}`}
-                        onClick={() => setActiveMenu('company')}
-                    >
-                        <FontAwesomeIcon icon={faBuilding} />
-                        {!isCollapsed && <span>--------------</span>}
                     </a>
                     <a
                         href="#"
@@ -95,7 +130,7 @@ const RecruiterDashboard = () => {
                         onClick={() => setActiveMenu('jobs')}
                     >
                         <FontAwesomeIcon icon={faBriefcase} />
-                        {!isCollapsed && <span>-------------</span>}
+                        {!isCollapsed && <span>Tuyển dụng</span>}
                     </a>
                     <a
                         href="#"

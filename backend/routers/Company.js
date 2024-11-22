@@ -1,20 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const Company = require('../models/Company');
+const User = require('../models/User');
+const mongoose = require('mongoose');
+const authenticateToken = require('../middleware/authenticateToken');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 // Cấu hình multer để xử lý file upload
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-router.post('/', async (req, res) => {
+router.post('/newcompany', async (req, res) => {
   const { name, description, industry, location, website, logo, quymo } = req.body;
 
   // Kiểm tra nếu tất cả thông tin cần thiết đã có
   if (!name || !description || !industry || !location || !website || !logo || !quymo) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
-
+ 
   try {
     const newCompany = new Company({
       name,
@@ -46,7 +49,7 @@ router.get('/', async (req, res) => {
 });
 
 // READ - Lấy thông tin công ty theo ID
-router.get('/:id', async (req, res) => {
+router.get('/company/:id', async (req, res) => {
   try {
     const company = await Company.findById(req.params.id);
     if (!company) {
@@ -56,22 +59,45 @@ router.get('/:id', async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }
+}); 
+
+// Lấy thông tin công ty theo userID
+router.get('/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const company = await Company.findOne({ user_id }).populate('user_id'); // Populate if needed
+
+    if (!company) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+
+    res.status(200).json(company);
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
+
+
+
+
 
 // UPDATE - Cập nhật thông tin công ty
 router.put('/:id', async (req, res) => {
   try {
-    const { name, description, industry, location, website, logo, quymo } = req.body;
+    const { company_name, description, industry, location, specific_address, website, quymo } = req.body;
 
     const updatedCompany = await Company.findByIdAndUpdate(
       req.params.id,
       {
-        name,
+        company_name,
         description,
         industry,
         location,
+        specific_address,
         website,
-        logo,
+        logo: null,
+        banner: null,
         quymo,
         updated_at: new Date()
       },
