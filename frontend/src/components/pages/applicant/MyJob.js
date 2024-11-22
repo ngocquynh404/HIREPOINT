@@ -270,7 +270,7 @@ const MyJob = () => {
                                         <img
                                             src={application.job_id.company_id.logo || 'default-logo.png'} // Display company logo, with a fallback to a default image
                                             // Display company logo, with a fallback to a default image
-                                            alt="Company Logo"
+                                            alt="Company Logo" style={{ width: '70px', height: '70px' }}
                                         />
                                     </div>
                                     <div className="my-job-info-sections">
@@ -322,7 +322,7 @@ const MyJob = () => {
                         {savedJobs.length > 0 ? (
                             savedJobs.map((job, index) => (
                                 <div key={index} className="my-job-info-item-card">
-                                    <div className="my-job-board-company-logo">
+                                    <div className="my-job-board-company-logo" style={{ width: '70px', height: '70px' }}>
                                         <img src={job.job_id.company_id.logo} alt="Company Logo" />
                                     </div>
                                     <div className="my-job-info-sections">
