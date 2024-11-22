@@ -51,6 +51,50 @@ router.post('/create', authenticateToken, async (req, res) => {
     return res.status(500).json({ message: 'Error creating profile', error });
   }
 });
+router.put('/update-skills', async (req, res) => {
+  try {
+      const { userId, skills } = req.body;
+
+      // Kiểm tra nếu thiếu thông tin
+      if (!userId || !skills) {
+          return res.status(400).json({ message: 'Thông tin kỹ năng không hợp lệ.' });
+      }
+
+      // Tìm profile của người dùng và cập nhật kỹ năng
+      const profile = await Profile.findOne({ user_id: userId });
+
+      if (!profile) {
+          return res.status(404).json({ message: 'Không tìm thấy profile của người dùng.' });
+      }
+
+      // Cập nhật danh sách kỹ năng
+      profile.skills = skills;
+
+      // Lưu thông tin mới
+      await profile.save();
+
+      res.status(200).json({ message: 'Cập nhật kỹ năng thành công.', profile });
+  } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: 'Lỗi khi cập nhật kỹ năng.', error: error.message });
+  }
+});
+router.get('/skills/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;  // Lấy userId từ URL
+    const profile = await Profile.findOne({ user_id: userId });
+
+    if (!profile) {
+      return res.status(404).json({ message: "User profile not found." });
+    }
+
+    // Trả về kỹ năng của người dùng
+    res.json({ skills: profile.skills });
+  } catch (error) {
+    console.error("Error fetching skills:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 router.post('/profile', async (req, res) => {
   const { user_id, first_name, last_name, email, phone,
