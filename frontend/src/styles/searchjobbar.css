@@ -100,3 +100,8 @@
     width: 80%;
     grid-template-columns: repeat(5, 1fr);
 }
+
+.find-applicant-row{
+  display: flex;
+  gap: 40px;
+}

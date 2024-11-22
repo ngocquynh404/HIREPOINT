@@ -15,6 +15,7 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 });
+
 // Route tạo hồ sơ mới
 router.post('/create', authenticateToken, async (req, res) => {
   try {
@@ -277,6 +278,34 @@ router.post('/follower-profiles', async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch profiles.' });
   }
 });
+
+// GET all profiles with role "applicant"
+router.get('/profile-user/alls', async (req, res) => {
+  try {
+    // Lọc các profiles mà User có role là "applicant"
+    const profiles = await Profile.find()
+      .populate({
+        path: 'user_id', // Giả sử profile có trường 'user_id' tham chiếu đến User
+        match: { role: 'applicant' }, // Lọc User có role là "applicant"
+        select: 'role' // Chỉ lấy thông tin về role của User
+      })
+      .exec(); // Thực thi truy vấn
+
+    // Lọc bỏ những profile không có user_id hoặc role không phải là "applicant"
+    const filteredProfiles = profiles.filter(profile => profile.user_id);
+
+    // Kiểm tra nếu không có profile nào
+    if (filteredProfiles.length === 0) {
+      return res.status(404).json({ message: 'No profiles found with role "applicant"' });
+    }
+
+    return res.status(200).json({ success: true, profiles: filteredProfiles });
+  } catch (error) {
+    console.error('Error fetching all profiles:', error);
+    return res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
+
 
 
 module.exports = router;

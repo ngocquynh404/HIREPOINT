@@ -70,6 +70,7 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error });
   }
 });
+
 router.get('/filter', async (req, res) => {
   try {
     const { keyword, job_type, location, company_name, min_salary, max_salary, industry, skills } = req.query;
