@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
-import '../../../styles/searchjob.css'
+import '../../../styles/searchjob.css';
+import '../../../styles/searchjobbar.css';
 import SearchJobBar from '../../UI/SearchJobBar';
 import ApplyJob from '../applicant/ApplyJob';
 import axios from 'axios';
+import Dropdown from "../../UI/DropDown";
+
 
 export default function Jobs() {
     const jobData = [
@@ -411,7 +414,7 @@ export default function Jobs() {
     useEffect(() => {
         if (searchQuery) {
             const filtered = jobData.filter(job =>
-                job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 job.company.toLowerCase().includes(searchQuery.toLowerCase())
             );
             setFilteredJobs(filtered);
@@ -419,11 +422,129 @@ export default function Jobs() {
             setFilteredJobs(jobData); // Reset to all jobs if searchQuery is empty
         }
     }, [searchQuery]);
-    
+
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [keyword, setKeyword] = useState('');
+
+    // hàm trong DropDown 
+    // options={fieldData} onSelect={(selected) => console.log(selected)
+    //options={employmentTypeData} onSelect={(selected) => console.log(selected)}
+    //options={experienceData} onSelect={(selected) => console.log(selected)}
+    //options={salaryData} onSelect={(selected) => console.log(selected)}
+    //options={salaryData} onSelect={(selected) => console.log(selected)} 
+    const toggleAdvancedFilters = () => {
+        setShowAdvancedFilters(!showAdvancedFilters);
+    };
+    const handleSalarySelect = (value) => {
+        // Sử dụng regex để làm sạch khoảng trắng trước và sau dấu gạch
+        const cleanedValue = value.replace(/\s+/g, '');  // Loại bỏ tất cả khoảng trắng
+
+        // Kiểm tra định dạng số - số
+        const regex = /^(\d+)-(\d+)$/;
+
+        const match = cleanedValue.match(regex);
+        if (match) {
+            const min = match[1];  // Lương tối thiểu
+            const max = match[2];  // Lương tối đa
+            setMinSalary(min);
+            setMaxSalary(max);
+        } else {
+            console.log("Vui lòng nhập lương theo định dạng đúng (VD: 10000-20000).");
+        }
+    };
+    const [searchJobQuery, setSearchJobQuery] = useState('');
+    const [location, setLocation] = useState('');
+    const [jobType, setJobType] = useState('');
+    const [minSalary, setMinSalary] = useState('');
+    const [maxSalary, setMaxSalary] = useState('');
+    const [industry, setIndustry] = useState('');
+    const [skills, setSkills] = useState('');
+    const [companyName, setCompanyName] = useState('');
+
+    const handleSearch = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/api/jobs/filter', {
+                params: {
+                    keyword,
+                    job_type: jobType,
+                    location: location,
+                    min_salary: minSalary,
+                    max_salary: maxSalary,
+                    company_name: companyName,
+                    industry: industry,
+                    skills: skills,
+                },
+            });
+            console.log('Filtered jobs:', response.data);
+        } catch (error) {
+            console.error('Error fetching jobs:', error);
+        }
+    };
+
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();  // Ngừng hành động mặc định của phím Enter
+            handleSearch();  // Gọi hàm search khi nhấn Enter
+        }
+    };
+    const handleIndustrySelect = (value) => {
+        setIndustry(value);
+    };
+
+    const handleJobTypeSelect = (value) => {
+        setJobType(value);
+    };
+    const handleJobSkillSelect = (value) => {
+        setSkills(value);
+    };
+    const handleJobSelect = (value) => {
+        setLocation(value); // vi tri
+    };
+
     return (
         <div className='search-job-board'>
             <div className='search-job-header'>
-                <SearchJobBar />
+                <div className='search-job-bar-body'>
+                    <div className='search-job-bar-search'>
+                        <div class="search-job-bar-container">
+                            <input type="text" class="search-job-bar-input" placeholder="Vị trí tuyển dụng, tên công ty"
+                                value={searchJobQuery}
+                                onChange={(e) => setSearchJobQuery(e.target.value)}></input>
+                            <div class="search-job-bar-location-dropdown">
+                                <span class="search-job-bar-location-icon">📍</span>
+                                <span class="search-job-bar-location-text">Tất cả tỉnh/thành phố</span>
+                                <span class="search-job-bar-dropdown-arrow">▼</span>
+                            </div>
+                            <Link className="search-job-bar-search-button" to="/search-job">
+                                <span class="search-job-bar-search-icon">🔍</span>
+                                Tìm kiếm
+                            </Link>
+                        </div>
+                        <button
+                            className="search-job-btn-advanced"
+                            onClick={toggleAdvancedFilters}
+                        >
+                            {showAdvancedFilters ? 'Ẩn nâng cao' : 'Lọc nâng cao'}
+                        </button>
+                    </div>
+                    {showAdvancedFilters && (
+                        <div className="search-job-advanced-filters">
+                            <Dropdown label="Địa điểm" isInputField={true}
+                                onSelect={handleJobSelect} />
+                            <Dropdown label="Lĩnh vực" isInputField={true}
+                                onSelect={handleIndustrySelect} />
+                            <Dropdown label="Lương" isInputField={true}
+                                onSelect={handleSalarySelect} />
+                            <Dropdown label="Kinh nghiệm" isInputField={true}
+                                onSelect={handleJobSkillSelect} />
+                            <Dropdown label="Hình thức" isInputField={true}
+                                onSelect={handleJobTypeSelect} />
+
+                        </div>
+
+                    )}
+                    <button onClick={handleSearch}> Tim Kiem</button>
+                </div>
             </div>
             <div className="search-job-banner">
                 <div className="search-job-skills">
@@ -466,24 +587,24 @@ export default function Jobs() {
                                             <div className="search-job-info-details">
                                                 <span className="search-job-location-info">📍 {job.location}</span>
                                                 <span className="search-job-remaining-days">⏳ Còn{' '}
-                                                {isNaN(
-                                                    Math.max(
-                                                        Math.ceil(
-                                                            (new Date(job.application_deadline) - new Date()) /
-                                                            (1000 * 60 * 60 * 24)
-                                                        ),
-                                                        0
+                                                    {isNaN(
+                                                        Math.max(
+                                                            Math.ceil(
+                                                                (new Date(job.application_deadline) - new Date()) /
+                                                                (1000 * 60 * 60 * 24)
+                                                            ),
+                                                            0
+                                                        )
                                                     )
-                                                )
-                                                    ? 0 // Nếu NaN, hiển thị 0
-                                                    : Math.max(
-                                                        Math.ceil(
-                                                            (new Date(job.application_deadline) - new Date()) /
-                                                            (1000 * 60 * 60 * 24)
-                                                        ),
-                                                        0
-                                                    )}{' '}
-                                                ngày để ứng tuyển</span>
+                                                        ? 0 // Nếu NaN, hiển thị 0
+                                                        : Math.max(
+                                                            Math.ceil(
+                                                                (new Date(job.application_deadline) - new Date()) /
+                                                                (1000 * 60 * 60 * 24)
+                                                            ),
+                                                            0
+                                                        )}{' '}
+                                                    ngày để ứng tuyển</span>
                                             </div>
                                             <p className="search-job-update">Cập nhật {job.updateTime} trước</p>
                                         </div>
