@@ -350,6 +350,22 @@ router.get('/profile-user/alls', async (req, res) => {
   }
 });
 
+// GET profile by applicantId
+router.get('/applicant/:applicantId', async (req, res) => {
+  try {
+    const { applicantId } = req.params; // Get applicantId from the request parameters
+    const profile = await Profile.findOne({ _id: applicantId }).populate('_id'); // Find profile by user_id (applicantId)
+
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found for the given applicantId' });
+    }
+
+    res.status(200).json(profile); // Return the found profile
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
 
 
 module.exports = router;

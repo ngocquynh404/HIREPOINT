@@ -220,7 +220,7 @@ const FindApplicant = () => {
                                         className="company-profile-logo"
                                     />
                                     <div className="company-profile-info">
-                                        <Link to={`/companies/companydetail/${follower_profile.id}`}>
+                                        <Link to={`/applicants/applicant-profile/${follower_profile._id}`}>
                                             <h4>{`${follower_profile.first_name} ${follower_profile.last_name}`}</h4>
                                         </Link>
                                         <span>{`${follower_profile.current_industry} - ${follower_profile.current_field}`}</span>
