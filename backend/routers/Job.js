@@ -100,6 +100,12 @@ router.get('/filter', async (req, res) => {
     if (industry) companyFilter.industry = { $regex: industry, $options: 'i' };
     if (company_name) companyFilter.name = { $regex: company_name, $options: 'i' };
 
+    // Filter by skills (matching at least one skill)
+    if (skills) {
+      const skillsArray = skills.split(',');  // Assuming skills are provided as a comma-separated string
+      filter.skills = { $in: skillsArray };
+    }
+
     // Fetch jobs based on filters
     const jobs = await Job.find(filter).populate({
       path: 'company_id',
@@ -113,6 +119,7 @@ router.get('/filter', async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error });
   }
 });
+
 
 
 //load danh sách công việc

@@ -9,7 +9,7 @@ import Dropdown from "../../UI/DropDown";
 
 
 export default function Jobs() {
-    const jobData = [
+    {/* const jobData = [
         {
             id: 1,
             logo: 'logo1.png',
@@ -360,12 +360,29 @@ export default function Jobs() {
             updateTime: '2 ngày',
             remainingDays: 6
         }
-    ];
+    ];*/}
+
+    const [jobList, setJobList] = useState([]);
+    const [favorites, setFavorites] = useState([]);
+    const [filteredJobs, setFilteredJobs] = useState([]);
+    const toggleFavorite = (jobTitle) => {
+        setFavorites((prevFavorites) => {
+            if (prevFavorites.includes(jobTitle)) {
+                return prevFavorites.filter((title) => title !== jobTitle); // Xóa yêu thích
+            } else {
+                return [...prevFavorites, jobTitle]; // Thêm vào yêu thích
+            }
+        });
+    };
     const [currentPage, setCurrentPage] = useState(0);
     const jobsPerPage = 15;
 
-    const currentJobs = jobData.slice(currentPage * jobsPerPage, (currentPage + 1) * jobsPerPage);
-    const totalPages = Math.ceil(jobData.length / jobsPerPage);
+    // Calculate total pages
+    const totalPages = filteredJobs && Array.isArray(filteredJobs) ? Math.ceil(filteredJobs.length / jobsPerPage) : 0;
+
+
+    // Get current jobs for the current page
+    const currentJobs = Array.isArray(filteredJobs) ? filteredJobs.slice(currentPage * jobsPerPage, (currentPage + 1) * jobsPerPage) : [];
 
     const nextPage = () => {
         if (currentPage < totalPages - 1) {
@@ -379,23 +396,28 @@ export default function Jobs() {
         }
     };
 
-    const [favorites, setFavorites] = useState([]);
-
-    const toggleFavorite = (jobTitle) => {
-        setFavorites((prevFavorites) => {
-            if (prevFavorites.includes(jobTitle)) {
-                return prevFavorites.filter((title) => title !== jobTitle);
-            } else {
-                return [...prevFavorites, jobTitle];
+    useEffect(() => {
+        // Assuming this function fetches job data
+        const fetchJobs = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/jobs');
+                setFilteredJobs(response.data.jobs);
+            } catch (error) {
+                console.error('Error fetching jobs:', error);
             }
-        });
-    };
+        };
+        fetchJobs();
+    }, []);
+    useEffect(() => {
+        if (Array.isArray(jobList)) {
+            setFilteredJobs(jobList);
+        } else {
+            setFilteredJobs([]);
+        }
+    }, [jobList]);
 
     /////apply job
-    const [jobList, setJobList] = useState(jobData); // Dữ liệu danh sách công việc
     const [favoriteJobs, setFavoriteJobs] = useState([]); // Danh sách công việc yêu thích
-    const [jobToApply, setJobToApply] = useState(null); // Công việc được chọn để ứng tuyển
-    const [searchQuery, setSearchQuery] = useState('');
     const handleFavoriteToggle = (jobTitle) => {
         setFavoriteJobs((prevFavorites) =>
             prevFavorites.includes(jobTitle)
@@ -407,21 +429,24 @@ export default function Jobs() {
     const openApplyForm = (job) => {
         setJobToApply(job); // Gán công việc được chọn
     };
-    const [filteredJobs, setFilteredJobs] = useState([]);
     const closeApplyForm = () => {
         setJobToApply(null); // Đóng form ứng tuyển
     };
+    const [searchQuery, setSearchQuery] = useState('');
     useEffect(() => {
+        // Chạy khi `jobList` thay đổi
         if (searchQuery) {
-            const filtered = jobData.filter(job =>
+            const filtered = jobList.filter((job) =>
                 job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                job.company.toLowerCase().includes(searchQuery.toLowerCase())
+                job.companyName.toLowerCase().includes(searchQuery.toLowerCase())
             );
             setFilteredJobs(filtered);
         } else {
-            setFilteredJobs(jobData); // Reset to all jobs if searchQuery is empty
+            setFilteredJobs(jobList);
         }
-    }, [searchQuery]);
+    }, [searchQuery, jobList]); // Chỉ chạy khi `searchQuery` hoặc `jobList` thay đổi
+    // Chạy lại khi `searchQuery` hoặc `jobList` thay đổi
+
 
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
     const [keyword, setKeyword] = useState('');
@@ -436,23 +461,20 @@ export default function Jobs() {
         setShowAdvancedFilters(!showAdvancedFilters);
     };
     const handleSalarySelect = (value) => {
-        // Sử dụng regex để làm sạch khoảng trắng trước và sau dấu gạch
         const cleanedValue = value.replace(/\s+/g, '');  // Loại bỏ tất cả khoảng trắng
-
-        // Kiểm tra định dạng số - số
         const regex = /^(\d+)-(\d+)$/;
-
         const match = cleanedValue.match(regex);
         if (match) {
-            const min = match[1];  // Lương tối thiểu
-            const max = match[2];  // Lương tối đa
+            const min = match[1];
+            const max = match[2];
             setMinSalary(min);
             setMaxSalary(max);
         } else {
             console.log("Vui lòng nhập lương theo định dạng đúng (VD: 10000-20000).");
         }
     };
-    const [searchJobQuery, setSearchJobQuery] = useState('');
+
+
     const [location, setLocation] = useState('');
     const [jobType, setJobType] = useState('');
     const [minSalary, setMinSalary] = useState('');
@@ -461,6 +483,9 @@ export default function Jobs() {
     const [skills, setSkills] = useState('');
     const [companyName, setCompanyName] = useState('');
 
+
+    const [jobToApply, setJobToApply] = useState(null);
+    const [jobs, setJobs] = useState([]);
     const handleSearch = async () => {
         try {
             const response = await axios.get('http://localhost:5000/api/jobs/filter', {
@@ -475,6 +500,7 @@ export default function Jobs() {
                     skills: skills,
                 },
             });
+            setJobs(response.data);
             console.log('Filtered jobs:', response.data);
         } catch (error) {
             console.error('Error fetching jobs:', error);
@@ -508,8 +534,8 @@ export default function Jobs() {
                     <div className='search-job-bar-search'>
                         <div class="search-job-bar-container">
                             <input type="text" class="search-job-bar-input" placeholder="Vị trí tuyển dụng, tên công ty"
-                                value={searchJobQuery}
-                                onChange={(e) => setSearchJobQuery(e.target.value)}></input>
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}></input>
                             <div class="search-job-bar-location-dropdown">
                                 <span class="search-job-bar-location-icon">📍</span>
                                 <span class="search-job-bar-location-text">Tất cả tỉnh/thành phố</span>
@@ -529,12 +555,11 @@ export default function Jobs() {
                     </div>
                     {showAdvancedFilters && (
                         <div className="search-job-advanced-filters">
-                            <Dropdown label="Địa điểm" isInputField={true}
+                            <Dropdown label="Ngành nghề" isInputField={true}
                                 onSelect={handleJobSelect} />
                             <Dropdown label="Lĩnh vực" isInputField={true}
                                 onSelect={handleIndustrySelect} />
-                            <Dropdown label="Lương" isInputField={true}
-                                onSelect={handleSalarySelect} />
+                            <Dropdown label="Lương" isInputField={true} onSelect={handleSalarySelect} />
                             <Dropdown label="Kinh nghiệm" isInputField={true}
                                 onSelect={handleJobSkillSelect} />
                             <Dropdown label="Hình thức" isInputField={true}
@@ -572,9 +597,9 @@ export default function Jobs() {
                 <div className='search-job-board-list-left'>
                     <div className='search-job-list'>
                         <div className="search-job-board-list-container">
-                            {filteredJobs.length > 0 ? (
-                                filteredJobs.map((job) => (
-                                    <div key={job._id} job={job} className="search-job-info-item-card">
+                            {jobs.length > 0 ? (
+                                jobs.map((job) => (
+                                    <div key={job._id} className="search-job-info-item-card">
                                         <div className="search-job-board-company-logo">
                                             <img src={'defaultLogo.png'} alt="Company Logo" />
                                         </div>
@@ -582,7 +607,7 @@ export default function Jobs() {
                                             <Link to={`/jobs/jobdetail/${job._id}`} className="search-job-info-position-title">
                                                 <h2>{job.title}</h2>
                                             </Link>
-                                            <p className="search-job-info-company-name">{'comayname'}</p>
+                                            <p className="search-job-info-company-name">{job.companyName}</p>
                                             <span className="search-job-salary-info">{job.salary}</span>
                                             <div className="search-job-info-details">
                                                 <span className="search-job-location-info">📍 {job.location}</span>
@@ -596,7 +621,7 @@ export default function Jobs() {
                                                             0
                                                         )
                                                     )
-                                                        ? 0 // Nếu NaN, hiển thị 0
+                                                        ? 0 // If NaN, display 0
                                                         : Math.max(
                                                             Math.ceil(
                                                                 (new Date(job.application_deadline) - new Date()) /
@@ -604,15 +629,13 @@ export default function Jobs() {
                                                             ),
                                                             0
                                                         )}{' '}
-                                                    ngày để ứng tuyển</span>
+                                                    ngày để ứng tuyển
+                                                </span>
                                             </div>
                                             <p className="search-job-update">Cập nhật {job.updateTime} trước</p>
                                         </div>
                                         <div className="search-job-salary-apply">
                                             <button className="search-job-apply-button" onClick={() => openApplyForm(job)}>Ứng tuyển</button>
-                                            <div className="search-job-info-favorite-icon" onClick={() => toggleFavorite(job.title)}>
-                                                <span>{favorites.includes(job.title) ? '❤️' : '🤍'}</span>
-                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -622,7 +645,7 @@ export default function Jobs() {
                         </div>
                         <div className="search-job-pagination-indicator">
                             <div className="search-job-nav-buttons">
-                                <button className="search-job-nav-button" onClick={prevPage} disabled={currentPage === 0}>&#8249;</button>
+                                <button className="search-job-nav-button" onClick={prevPage} disabled={currentPage === 0}>‹</button>
                                 {[...Array(totalPages)].map((_, index) => (
                                     <button
                                         key={index}
@@ -630,21 +653,13 @@ export default function Jobs() {
                                         onClick={() => setCurrentPage(index)}
                                     />
                                 ))}
-                                <button className="search-job-nav-button" onClick={nextPage} disabled={currentPage === totalPages - 1}>&#8250;</button>
+                                <button className="search-job-nav-button" onClick={nextPage} disabled={currentPage === totalPages - 1}>›</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div className="search-job-ads">
-                    <div className="search-job-ads-banner">
-                        <div className="search-job-ads-banner-content">
-                            <h1 className="search-job-ads-banner-heading">Special Offer on Renovation Services</h1>
-                            <p className="search-job-ads-banner-description">Get the best quality renovation services at an affordable price. Limited time offer!</p>
-                            <button className="search-job-ads-banner-button">Learn More</button>
-                        </div>
-                    </div>
-                </div>
             </div>
+
 
             {jobToApply && (
                 <ApplyJob job={jobToApply} onClose={closeApplyForm} />

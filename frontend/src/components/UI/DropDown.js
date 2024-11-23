@@ -5,6 +5,8 @@ function Dropdown({ label, options, onSelect }) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOptions, setSelectedOptions] = useState([]);
     const dropdownRef = useRef(null);
+    const [searchQuery, setSearchQuery] = useState(''); // Dùng để lưu trữ giá trị tìm kiếm
+    const [inputValue, setInputValue] = useState(""); // Dùng để lưu trữ giá trị của input (nếu cần)
 
     const toggleDropdown = () => {
         setIsOpen(!isOpen);
@@ -17,9 +19,10 @@ function Dropdown({ label, options, onSelect }) {
             : [...selectedOptions, option];
 
         setSelectedOptions(newSelections);
-        onSelect(newSelections);
+        onSelect(newSelections); // Truyền lại các lựa chọn được chọn
     };
 
+    // Đóng dropdown khi người dùng nhấp ra ngoài
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -32,6 +35,13 @@ function Dropdown({ label, options, onSelect }) {
         };
     }, []);
 
+    // Cập nhật giá trị khi người dùng thay đổi input
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setInputValue(value);
+        onSelect(value); 
+    };
+
     return (
         <div className="find-jobs-dropdown" ref={dropdownRef}>
             <button onClick={toggleDropdown} className="find-jobs-dropdown-toggle">
@@ -40,10 +50,18 @@ function Dropdown({ label, options, onSelect }) {
             {isOpen && (
                 <div className="find-jobs-dropdown-menu">
                     <div className="find-jobs-dropdown-search">
-                        <input type="text" placeholder="Tìm kiếm" />
+                        <input 
+                            type="text" 
+                            placeholder="Tìm kiếm" 
+                            value={inputValue}
+                            onChange={handleInputChange}  // Xử lý sự kiện khi người dùng nhập
+                        />
                     </div>
-                    <ul>
-                        {options.map((option) => (
+                    {/* Hiển thị danh sách các options nếu cần */}
+                    {/*<ul>
+                        {options.filter(option => 
+                            option.name.toLowerCase().includes(searchQuery.toLowerCase())
+                        ).map((option) => (
                             <li key={option.id} className="find-jobs-dropdown-item">
                                 <label>
                                     <input
@@ -51,12 +69,11 @@ function Dropdown({ label, options, onSelect }) {
                                         checked={selectedOptions.some((selected) => selected.id === option.id)}
                                         onChange={() => handleOptionClick(option)}
                                     />
-                                    {option.name} {/* Đảm bảo rằng `option.name` được đặt ở đây */}
-                                    <span>({option.count})</span>
+                                    {option.name}
                                 </label>
                             </li>
                         ))}
-                    </ul>
+                    </ul>*/}
                 </div>
             )}
         </div>
