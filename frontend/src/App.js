@@ -19,6 +19,7 @@ import JobSaved from "./components/pages/job/JobSaved";
 import RecruiterSignIn from "./components/pages/authentication/RecruiterSignIn";
 import RecruiterSignUp from "./components/pages/authentication/RecruiterSignUp";
 import RecruiterHomePage from "./components/pages/recruiter/RecruiterHomePage";
+import ApplicantProfile from "./components/pages/recruiter/ApplicantProfile";
 
 function Layout() {
   const location = useLocation();
@@ -47,6 +48,7 @@ function Layout() {
         <Route exact path="/recruiter-sign-in" element={<RecruiterSignIn />} />
         <Route exact path="/recruiter-sign-up" element={<RecruiterSignUp />} />
         <Route exact path="/recruiter-homepage" element={<RecruiterHomePage />} />
+        <Route exact path="/applicants/applicant-profile/:applicantId" element={<ApplicantProfile />} />
 
       </Routes>
       {!hideHeaderFooter && <Footer />}
