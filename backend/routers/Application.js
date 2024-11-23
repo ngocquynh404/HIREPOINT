@@ -22,6 +22,39 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized: User not found' });
     }
 
+    // Kiểm tra nếu công việc đã đóng
+    const job = await Job.findById(job_id);
+    if (!job) {
+      return res.status(404).json({ message: 'Công việc đã đóng' });
+    }
+
+    if (job.status === 'closed') {
+      return res.status(400).json({ message: 'Công việc này đã không còn tuyển dụng.' });
+    }
+
+    // Kiểm tra nếu công việc đã hết hạn
+    if (job.application_deadline && new Date() > job.application_deadline) {
+      return res.status(400).json({ message: 'Đã quá hạn cho nộp đơn ứng tuyển.' });
+    }
+
+    // Kiểm tra nếu ứng viên đã ứng tuyển vào công việc này rồi
+    const existingApplication = await Application.findOne({ job_id, candidate_id });
+
+    if (existingApplication) {
+      // Nếu ứng tuyển trước đó bị từ chối, cho phép ứng viên ứng tuyển lại
+      if (existingApplication.status === 'không trúng tuyển' || existingApplication.status === 'đã từ chối') {
+        existingApplication.cover_letter = cover_letter || existingApplication.cover_letter; // Cập nhật cover letter
+        existingApplication.status = status || 'đã nộp'; // Cập nhật trạng thái nếu có
+        await existingApplication.save();  // Cập nhật lại ứng tuyển
+
+        return res.status(200).json({ message: 'Application updated successfully', application: existingApplication });
+      }
+
+      // Nếu ứng viên đã ứng tuyển và chưa bị từ chối, không cho phép nộp lại
+      return res.status(400).json({ message: 'Bạn đã ứng tuyển công việc này trước đó.' });
+    }
+
+    // Nếu ứng viên chưa ứng tuyển, tạo ứng tuyển mới
     const application = new Application({
       job_id,
       candidate_id,
@@ -32,11 +65,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
     await application.save();
 
-    const job = await Job.findById(job_id).populate('employer_id');
-    if (!job) {
-      return res.status(404).json({ message: 'Job not found' });
-    }
-
+    // Tạo thông báo cho nhà tuyển dụng
     const notification = new Notification({
       user_id: job.employer_id._id,  // Employer ID
       message: `Có một ứng viên mới ứng tuyển vào công việc "${job.title}".`,
@@ -45,6 +74,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
     await notification.save();
 
+    // Emit sự kiện thông báo cho nhà tuyển dụng
     req.io.emit('new-application', notification);
     req.io.to(job.employer_id._id.toString()).emit('notification', notification);
 
@@ -53,6 +83,7 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
 
 // GET - Lấy tất cả đơn ứng tuyển cho một công việc
 router.get('/job/:jobId', async (req, res) => {

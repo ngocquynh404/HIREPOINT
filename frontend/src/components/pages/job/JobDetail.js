@@ -103,62 +103,70 @@ function JobDetail() {
 
     const handleSave = async (jobId) => {
         try {
-          // Lấy token từ localStorage
-          const token = localStorage.getItem('token');
-    
-          // Kiểm tra nếu không có token
-          if (!token) {
-            setError('Bạn chưa đăng nhập. Vui lòng đăng nhập lại.');
-            return;
-          }
-    
-          // Gửi yêu cầu POST để lưu công việc
-          const response = await axios.post(
-            'http://localhost:5000/api/savedjobs/save-job',
-            { job_id: jobId },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-            
-          // Kiểm tra nếu lưu thành công
-          if (response.status === 201) {
-            alert('Lưu tin ứng tuyển thành công!');
-            setTimeout(() => setSuccessMessage(null), 3000); // Ẩn thông báo thành công sau 3 giây
-    
-            // Cập nhật danh sách công việc đã lưu
-            setSavedJobs((prevSavedJobs) => [...prevSavedJobs, response.data.savedJob]);
-          }
-         
+            // Lấy token từ localStorage
+            const token = localStorage.getItem('token');
+
+            // Kiểm tra nếu không có token
+            if (!token) {
+                setError('Bạn chưa đăng nhập. Vui lòng đăng nhập lại.');
+                return;
+            }
+
+            // Gửi yêu cầu POST để lưu công việc
+            const response = await axios.post(
+                'http://localhost:5000/api/savedjobs/save-job',
+                { job_id: jobId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            // Kiểm tra nếu lưu thành công
+            if (response.status === 201) {
+                alert('Lưu tin ứng tuyển thành công!');
+                setTimeout(() => setSuccessMessage(null), 3000); // Ẩn thông báo thành công sau 3 giây
+
+                // Cập nhật danh sách công việc đã lưu
+                setSavedJobs((prevSavedJobs) => [...prevSavedJobs, response.data.savedJob]);
+            }
+
         } catch (err) {
             if (err.response) {
                 // Xử lý các mã trạng thái cụ thể
                 if (err.response.status === 409) {
-                  alert('Bạn đã lưu công việc này trước đó.');
+                    alert('Bạn đã lưu công việc này trước đó.');
                 } else {
-                  setError(err.response.data.message || 'Không thể lưu công việc. Vui lòng thử lại.');
+                    setError(err.response.data.message || 'Không thể lưu công việc. Vui lòng thử lại.');
                 }
-              } else {
+            } else {
                 console.error('Error saving job:', err.message);
                 setError('Có lỗi xảy ra. Vui lòng thử lại.');
-              }
+            }
         }
-      };
-      const handleApply = async (jobId) => {
+    };
+
+    const handleApply = async (jobId) => {
         try {
-          const token = localStorage.getItem('token');
-          const response = await axios.post(
-            'http://localhost:5000/api/applications',
-            { job_id: jobId }, // Chỉ gửi job_id
-            { headers: { Authorization: `Bearer ${token}` } } // Authorization header với token
-          );
-    
-          if (response.status === 201) {
-            alert('Đã nộp đơn ứng tuyển thành công!');
-          }
+            const token = localStorage.getItem('token');
+            const response = await axios.post(
+                'http://localhost:5000/api/applications',
+                { job_id: jobId }, // Chỉ gửi job_id
+                { headers: { Authorization: `Bearer ${token}` } } // Authorization header với token
+            );
+
+            if (response.status === 201) {
+                alert('Đã nộp đơn ứng tuyển thành công!');
+            }
         } catch (err) {
-          console.error('Error applying for job:', err); // Log error details
-          setError('Không thể nộp đơn ứng tuyển. Vui lòng thử lại.');
+            console.error('Error applying for job:', err); // Log error details
+
+            // Nếu có lỗi từ phản hồi, lấy message từ response và hiển thị thông báo
+            if (err.response && err.response.data && err.response.data.message) {
+                alert(err.response.data.message); // Hiển thị thông báo lỗi từ response
+            } else {
+                alert('Đã có lỗi xảy ra, vui lòng thử lại.'); // Lỗi không xác định
+            }
         }
-      };
+    };
+
     return (
         <div className='job-detail-body'>
             <div className='job-detail-search-bar'>
@@ -270,7 +278,7 @@ function JobDetail() {
                                 <button onClick={() => handleApply(job._id)} className="job-detail-button">Lưu tin</button>
                             </div>
 
-                            <p className="job-detail-deadline">Hạn nộp hồ sơ: application_deadline</p>
+                            <p className="job-detail-deadline">Hạn nộp hồ sơ: {job ? job.application_deadline:'Không có thời hạn'}</p>
                         </div>
                         <div className='related-job-board-list-left'>
                             <h2 className='related-job-board-list-left-header'>Việc làm liên quan</h2>
@@ -350,7 +358,7 @@ function JobDetail() {
                                     <p className='detail-info'>{job.company_id.location}</p>
                                 </div>
                             </div>
-                            <a href= {job.company_id.website} className="job-detail-company-link">Xem trang công ty</a>
+                            <a href={job.company_id.website} className="job-detail-company-link">Xem trang công ty</a>
                         </div>
 
                         <div className="job-detail-general-info">
