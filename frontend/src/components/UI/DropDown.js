@@ -18,9 +18,10 @@ function Dropdown({ label, options, onSelect }) {
             : [...selectedOptions, option];
 
         setSelectedOptions(newSelections);
-        onSelect(newSelections);
+        onSelect(newSelections); // Truyền lại các lựa chọn được chọn
     };
 
+    // Đóng dropdown khi người dùng nhấp ra ngoài
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -59,6 +60,7 @@ function Dropdown({ label, options, onSelect }) {
                                     />
                                     {option.name} {/* Đảm bảo rằng `option.name` được đặt ở đây 
                                     <span>({option.count})</span>
+
                                 </label>
                             </li>
                         ))}

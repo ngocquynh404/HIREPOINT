@@ -500,7 +500,7 @@ export default function Jobs() {
                     skills: skills.length ? skills : []
                 },
             });
-    
+
             console.log('Filtered jobs:', response.data);
             setJobs(response.data); // Cập nhật state jobs
     
