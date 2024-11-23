@@ -274,8 +274,8 @@ function BestJobBoard() {
                         <div className="highlight-jobs-container-jb">
                             <div className="croll-high-job-card-jb">
                                 <div className="scroll-content-jb">
-                                    {[...companies, ...companies].map((company, index) => (
-                                        <div key={index} className="top-company-card-jb">
+                                    {[...companies, ...companies].map((company) => (
+                                        <div key={company._id} className="top-company-card-jb">
                                             <div className="top-company-logo-jb">
                                                 <img src={company.logo} alt={`${company.name} logo`} className="top-company-image-jb" />
                                             </div>

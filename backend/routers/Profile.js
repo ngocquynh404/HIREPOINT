@@ -80,6 +80,7 @@ router.put('/update-skills', async (req, res) => {
       res.status(500).json({ message: 'Lỗi khi cập nhật kỹ năng.', error: error.message });
   }
 });
+
 router.get('/skills/:userId', async (req, res) => {
   try {
     const { userId } = req.params;  // Lấy userId từ URL
@@ -366,6 +367,50 @@ router.get('/applicant/:applicantId', async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 });
+router.get('/filter', async (req, res) => {
+  try {
+    const { specific_address, job_title, job_level, years_of_experience, skills } = req.query;
+
+    let filter = {};
+    console.log('Filter request received:', req.query);
+    const applicantUsers = await User.find({ role: 'applicant' }).select('_id');
+    const applicantIds = applicantUsers.map((user) => user._id);
+
+    // Đảm bảo `applicantIds` là một mảng hợp lệ
+    if (applicantIds.length > 0) {
+      filter.user_id = { $in: applicantIds };
+    } else {
+      console.error('No applicant IDs found.');
+      return res.status(400).json({ message: 'Không tìm thấy ứng viên.' });
+    }
+
+    // Thêm các bộ lọc khác nếu hợp lệ
+    if (specific_address && specific_address.trim()) {
+      filter.specific_address = { $regex: specific_address, $options: 'i' };
+    }
+    if (job_title && job_title.trim()) {
+      filter.job_title = { $regex: job_title, $options: 'i' };
+    }
+    if (job_level && job_level.trim()) {
+      filter.job_level = { $regex: job_level, $options: 'i' };
+    }
+    if (years_of_experience) {
+      const years = parseInt(years_of_experience);
+      if (!isNaN(years)) filter.years_of_experience = years;
+    }
+    if (skills && skills.trim()) {
+      const skillsArray = skills.split(',');
+      filter.skills = { $in: skillsArray };
+    }
+
+    const profiles = await Profile.find(filter).exec();
+    res.json(profiles);
+  } catch (error) {
+    console.error('Error filtering profiles:', error);
+    res.status(500).json({ message: 'Lỗi server', error });
+  }
+});
+
 
 
 module.exports = router;

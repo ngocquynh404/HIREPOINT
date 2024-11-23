@@ -25,7 +25,7 @@ router.post('/newcompany', async (req, res) => {
       industry,
       location,
       website,
-      logo, // Lưu URL logo từ Cloudinary
+      logo,
       quymo
     });
 
@@ -111,8 +111,8 @@ router.get('/:user_id', async (req, res) => {
 // UPDATE - Cập nhật thông tin công ty
 router.put('/:id', async (req, res) => {
   try {
-    const { company_name, description, industry, location, specific_address, website, quymo } = req.body;
-
+    const { company_name, description, industry, location, specific_address,logo, website, quymo } = req.body;
+    console.log ('thong tin cong ty',req.body);
     const updatedCompany = await Company.findByIdAndUpdate(
       req.params.id,
       {
@@ -122,7 +122,7 @@ router.put('/:id', async (req, res) => {
         location,
         specific_address,
         website,
-        logo: null,
+        logo,
         banner: null,
         quymo,
         updated_at: new Date()

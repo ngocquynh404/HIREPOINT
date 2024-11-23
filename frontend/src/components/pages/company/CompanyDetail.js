@@ -117,7 +117,7 @@ export default function CompanyDetail() {
     useEffect(() => {
         const fetchCompany = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/companies/${companyId}`);
+                const response = await axios.get(`http://localhost:5000/api/companies/company/${companyId}`);
                 setCompany(response.data);
                 console.log('Company ID:', companyId);
                 setLoading(false);
@@ -215,7 +215,7 @@ export default function CompanyDetail() {
 
                     {/* Chi tiết công ty */}
                     <div className="company-detail-info-details">
-                        <h2 className="company-detail-info-name">{company?.name}</h2>
+                        <h2 className="company-detail-info-name">{company?.company_name}</h2>
                         <div className="company-detail-info-meta">
                             <span className="company-detail-info-size">
                                 🏢 {company?.quymo}
@@ -227,7 +227,7 @@ export default function CompanyDetail() {
                     </div>
 
                     {/* Nút theo dõi công ty */}
-                    <button onClick={() => handleFollow(company._id)} className="company-detail-info-follow-button">
+                    <button onClick={() => handleFollow(company?._id)} className="company-detail-info-follow-button">
                         + Theo dõi công ty
                     </button>
                 </div>

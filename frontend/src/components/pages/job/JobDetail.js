@@ -36,7 +36,7 @@ function JobDetail() {
                 setError('Không thể tải công việc. Vui lòng thử lại.');
             }
         };
-
+        
         const fetchData = async () => {
             setLoading(true);
             if (id) {
@@ -106,19 +106,17 @@ function JobDetail() {
             // Lấy token từ localStorage
             const token = localStorage.getItem('token');
 
-            // Kiểm tra nếu không có token
-            if (!token) {
-                setError('Bạn chưa đăng nhập. Vui lòng đăng nhập lại.');
+             if (token==null) {
+                alert('Bạn chưa đăng nhập. Vui lòng đăng nhập lại.');
                 return;
             }
-
             // Gửi yêu cầu POST để lưu công việc
             const response = await axios.post(
                 'http://localhost:5000/api/savedjobs/save-job',
                 { job_id: jobId },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-
+           
             // Kiểm tra nếu lưu thành công
             if (response.status === 201) {
                 alert('Lưu tin ứng tuyển thành công!');
@@ -135,6 +133,9 @@ function JobDetail() {
                     alert('Bạn đã lưu công việc này trước đó.');
                 } else {
                     setError(err.response.data.message || 'Không thể lưu công việc. Vui lòng thử lại.');
+                }
+                if (err.response.status === 401) {
+                    alert('Bạn cần đăng nhập để ứng tuyển');
                 }
             } else {
                 console.error('Error saving job:', err.message);
@@ -155,9 +156,12 @@ function JobDetail() {
             if (response.status === 201) {
                 alert('Đã nộp đơn ứng tuyển thành công!');
             }
+            if (response.status === 401) {
+                alert('Bạn cần đăng nhập để ứng tuyển');
+            }
         } catch (err) {
             console.error('Error applying for job:', err); // Log error details
-
+            
             // Nếu có lỗi từ phản hồi, lấy message từ response và hiển thị thông báo
             if (err.response && err.response.data && err.response.data.message) {
                 alert(err.response.data.message); // Hiển thị thông báo lỗi từ response
@@ -291,7 +295,7 @@ function JobDetail() {
                                                     <img src={job.company_id ? job.company_id.logo : 'N/A'} alt='Company Logo' />
                                                 </div>
                                                 <div className='related-job-info-sections'>
-                                                    <Link to={`/jobs/jobdetail/${job.id}`} className='related-job-info-position-title'>
+                                                    <Link to={`/jobs/jobdetail/${job._id}`} className='related-job-info-position-title'>
                                                         <h2>{job.title}</h2>
                                                     </Link>
                                                     <p className='related-job-info-company-name'>{job.company_id.name}</p>

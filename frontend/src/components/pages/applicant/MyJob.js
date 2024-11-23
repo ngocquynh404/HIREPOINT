@@ -268,29 +268,29 @@ const MyJob = () => {
                                 <div key={index} className="my-job-info-item-card">
                                     <div className="my-job-board-company-logo">
                                         <img
-                                            src={application.job_id.company_id.logo || 'default-logo.png'} // Display company logo, with a fallback to a default image
+                                            src={application.job_id?.company_id?.logo || 'default-logo.png'} // Display company logo, with a fallback to a default image
                                             // Display company logo, with a fallback to a default image
                                             alt="Company Logo" style={{ width: '70px', height: '70px' }}
                                         />
                                     </div>
                                     <div className="my-job-info-sections">
-                                        <Link to={`/jobs/jobdetail/${application.job_id._id}`} className="my-job-info-position-title">
-                                            <h2>{application.job_id.title}</h2> {/* Display the job title */}
+                                        <Link to={`/jobs/jobdetail/${application.job_id?._id}`} className="my-job-info-position-title">
+                                            <h2>{application.job_id?.title}</h2> {/* Display the job title */}
                                         </Link>
-                                        <p className="my-job-info-company-name">{application.job_id.company_id.name}</p> {/* Display the company name */}
+                                        <p className="my-job-info-company-name">{application.job_id?.company_id?.name}</p> {/* Display the company name */}
                                         <div className="my-job-info-details">
                                             <span className="my-salary-job-info">
-                                                {application.job_id.salary ? application.job_id.salary : 'Chưa có mức lương'}
+                                                {application.job_id?.salary ? application.job_id?.salary : 'Chưa có mức lương'}
                                             </span> {/* Display the job salary, with a fallback if not available */}
                                             <span className="my-location-job-info">
-                                                <FontAwesomeIcon icon={faMapMarkerAlt} /> {application.job_id.company_id.location || 'Chưa có địa chỉ'} {/* Display location */}
+                                                <FontAwesomeIcon icon={faMapMarkerAlt} /> {application.job_id?.company_id?.location || 'Chưa có địa chỉ'} {/* Display location */}
                                             </span>
                                             <span className="my-remaining-days">
                                                 <FontAwesomeIcon icon={faClock} /> Còn{' '}
                                                 {isNaN(
                                                     Math.max(
                                                         Math.ceil(
-                                                            (new Date(application.job_id.application_deadline) - new Date()) /
+                                                            (new Date(application.job_id?.application_deadline) - new Date()) /
                                                             (1000 * 60 * 60 * 24)
                                                         ),
                                                         0
@@ -299,7 +299,7 @@ const MyJob = () => {
                                                     ? 0 // Nếu NaN, hiển thị 0
                                                     : Math.max(
                                                         Math.ceil(
-                                                            (new Date(application.job_id.application_deadline) - new Date()) /
+                                                            (new Date(application.job_id?.application_deadline) - new Date()) /
                                                             (1000 * 60 * 60 * 24)
                                                         ),
                                                         0
@@ -323,15 +323,15 @@ const MyJob = () => {
                             savedJobs.map((job, index) => (
                                 <div key={index} className="my-job-info-item-card">
                                     <div className="my-job-board-company-logo" style={{ width: '70px', height: '70px' }}>
-                                        <img src={job.job_id.company_id.logo} alt="Company Logo" />
+                                        <img src={job.job_id?.company_id?.logo} alt="Company Logo" />
                                     </div>
                                     <div className="my-job-info-sections">
                                         <Link to={`/jobs/jobdetail/${job.job_id}`} className="my-job-info-position-title">
                                             <h2>{job.title}</h2>
                                         </Link>
-                                        <p className="my-job-info-company-name">{job.job_id.company_id.name}</p>
+                                        <p className="my-job-info-company-name">{job.job_id?.company_id?.company_name}</p>
                                         <div className="my-job-info-details">
-                                            <span className="my-salary-job-info">{job.job_id.salary}</span>
+                                            <span className="my-salary-job-info">{job.job_id?.salary}</span>
 
                                             <span className="my-location-job-info">
                                                 <FontAwesomeIcon icon={faMapMarkerAlt} /> {job.location}
@@ -341,7 +341,7 @@ const MyJob = () => {
                                                 {isNaN(
                                                     Math.max(
                                                         Math.ceil(
-                                                            (new Date(job.job_id.application_deadline) - new Date()) /
+                                                            (new Date(job.job_id?.application_deadline) - new Date()) /
                                                             (1000 * 60 * 60 * 24)
                                                         ),
                                                         0
@@ -350,7 +350,7 @@ const MyJob = () => {
                                                     ? 0 // Nếu NaN, hiển thị 0
                                                     : Math.max(
                                                         Math.ceil(
-                                                            (new Date(job.job_id.application_deadline) - new Date()) /
+                                                            (new Date(job.job_id?.application_deadline) - new Date()) /
                                                             (1000 * 60 * 60 * 24)
                                                         ),
                                                         0

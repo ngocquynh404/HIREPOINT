@@ -94,15 +94,15 @@ export default function TopCompany() {
                 <div className='unique-company-grid'>
                     {companies.length > 0 ? (
                         companies.map((company) => (
-                            <div key={company._id} className='unique-company-card'>
-                                <img src={company.banner} alt='Company Banner' className='unique-company-banner' />
+                            <div key={company?._id} className='unique-company-card'>
+                                <img src={company?.banner} alt='Company Banner' className='unique-company-banner' />
                                 <div className='unique-company-info'>
-                                    <img src={company.logo} alt='Company Logo' className='unique-company-logo' />
+                                    <img src={company?.logo} alt='Company Logo' className='unique-company-logo' />
                                     <div className='unique-company-details'>
                                         <Link to={`/companies/companydetail/${company._id}`} className="unique-company-name">
-                                            <h3 className='unique-company-name'>{company.name}</h3>
+                                            <h3 className='unique-company-name'>{company.company_name}</h3>
                                         </Link>
-                                        <p className='unique-company-followers'>{company.industry}</p>
+                                        <p className='unique-company-followers'>{company?.industry}</p>
                                         <button onClick={() => handleFollow(company._id)} className='unique-company-follow-button'>+ Theo dõi</button>
                                     </div>
                                 </div>

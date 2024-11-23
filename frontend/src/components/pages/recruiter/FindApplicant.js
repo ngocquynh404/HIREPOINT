@@ -53,6 +53,13 @@ const FindApplicant = () => {
     const [allProfiles, setAllProfiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [specificAddress, setSpecificAddress] = useState('');
+    const [jobTitle, setJobTitle] = useState('');
+    const [jobLevel, setJobLevel] = useState('');
+    const [yearsOfExperience, setYearsOfExperience] = useState('');
+    const [skills, setSkills] = useState([]);
+
+    const [filteredProfiles, setFilteredProfiles] = useState([]);
 
     useEffect(() => {
         const fetchAllProfiles = async () => {
@@ -77,51 +84,25 @@ const FindApplicant = () => {
         setShowAdvancedFilters(!showAdvancedFilters);
     };
 
-    const handleSalarySelect = (value) => {
-        // Sử dụng regex để làm sạch khoảng trắng trước và sau dấu gạch
-        const cleanedValue = value.replace(/\s+/g, '');  // Loại bỏ tất cả khoảng trắng
-
-        // Kiểm tra định dạng số - số
-        const regex = /^(\d+)-(\d+)$/;
-
-        const match = cleanedValue.match(regex);
-        if (match) {
-            const min = match[1];  // Lương tối thiểu
-            const max = match[2];  // Lương tối đa
-            setMinSalary(min);
-            setMaxSalary(max);
-        } else {
-            console.log("Vui lòng nhập lương theo định dạng đúng (VD: 10000-20000).");
-        }
-    };
-    const [location, setLocation] = useState('');
-    const [jobType, setJobType] = useState('');
-    const [minSalary, setMinSalary] = useState('');
-    const [maxSalary, setMaxSalary] = useState('');
-    const [industry, setIndustry] = useState('');
-    const [skills, setSkills] = useState('');
-    const [companyName, setCompanyName] = useState('');
-
     const handleSearch = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/jobs/filter', {
-                params: {
-                    keyword,
-                    job_type: jobType,
-                    location: location,
-                    min_salary: minSalary,
-                    max_salary: maxSalary,
-                    company_name: companyName,
-                    industry: industry,
-                    skills: skills,
-                }
-            }
-            );
-            console.log('Filtered jobs:', response.data);
+          const response = await axios.get('http://localhost:5000/api/profiles/filter', {
+            params: {
+              specific_address: specificAddress || '',
+              job_title: jobTitle || '',
+              job_level: jobLevel || '',
+              years_of_experience: yearsOfExperience || '',
+              skills: skills.length > 0 ? skills.join(',') : '',
+            },
+          });
+      
+          console.log('Filtered profiles:', response.data);
+          setFilteredProfiles(response.data);
         } catch (error) {
-            console.error('Error fetching jobs:', error);
+          console.error('Error fetching profiles:', error);
         }
-    };
+      };
+         
 
     const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
@@ -129,19 +110,38 @@ const FindApplicant = () => {
             handleSearch();  // Gọi hàm search khi nhấn Enter
         }
     };
-    const handleIndustrySelect = (value) => {
-        setIndustry(value);
+    const handleSpecificAddressChange = (value) => {
+        setSpecificAddress(value); // Cập nhật giá trị specific_address
+        console.log('Specific Address:', value); // In giá trị khi thay đổi
     };
 
-    const handleJobTypeSelect = (value) => {
-        setJobType(value);
+    const handleJobTitleChange = (value) => {
+        setJobTitle(value); // Cập nhật giá trị job_title
+        console.log('Job Title:', value); // In giá trị khi thay đổi
     };
-    const handleJobSkillSelect = (value) => {
-        setSkills(value);
+
+    const handleJobLevelChange = (value) => {
+        setJobLevel(value); // Cập nhật giá trị job_level
+        console.log('Job Level:', value); // In giá trị khi thay đổi
     };
-    const handleJobSelect = (value) => {
-        setLocation(value); // vi tri
+
+    const handleYearsOfExperienceChange = (value) => {
+        const numericValue = parseInt(value, 10);  // Chuyển giá trị thành số
+        if (!isNaN(numericValue)) {
+            setYearsOfExperience(numericValue);  // Cập nhật giá trị years_of_experience nếu là số hợp lệ
+            console.log('Years of Experience:', numericValue);  // In ra giá trị sau khi chuyển thành số
+        } else {
+            alert('Vui lòng nhập số');// In thông báo nếu không phải số hợp lệ
+        }
     };
+    
+
+    const handleSkillsChange = (selectedSkills) => {
+        const skillsString = selectedSkills.join(','); // Gộp mảng thành chuỗi phân cách bằng dấu phẩy
+        setSkills(skillsString); // Lưu giá trị chuỗi
+        console.log('Skills:', skillsString); // In skills dưới dạng chuỗi
+    };    
+
 
     // Chuyển đổi tab
     const [activeTab, setActiveTab] = useState('profileView');
@@ -184,13 +184,19 @@ const FindApplicant = () => {
                 </button>
                 {showAdvancedFilters && (
                     <div className="search-job-advanced-filters">
-                        <Dropdown label="Ngành nghề" options={industryData} onSelect={(selected) => console.log(selected)} />
-                        <Dropdown label="Lĩnh vực" options={fieldData} onSelect={(selected) => console.log(selected)} />
-                        <Dropdown label="Lương" options={salaryData} onSelect={(selected) => console.log(selected)} />
-                        <Dropdown label="Kinh nghiệm" options={experienceData} onSelect={(selected) => console.log(selected)} />
-                        <Dropdown label="Hình thức" options={employmentTypeData} onSelect={(selected) => console.log(selected)} />
+                        <Dropdown label="Địa điểm" isInputField={true}
+                                onSelect={handleSpecificAddressChange} />
+                        <Dropdown label="Chức danh" isInputField={true}
+                                onSelect={handleJobTitleChange}/>
+                        <Dropdown label="Cấp bậc" isInputField={true}
+                                onSelect={handleJobLevelChange} />
+                        <Dropdown label="Năm Kinh nghiệm" isInputField={true}
+                                onSelect={handleYearsOfExperienceChange} />
+                        <Dropdown label="Kỹ năng" isInputField={true}
+                                onSelect={handleSkillsChange} />
                     </div>
                 )}
+                <button onClick={handleSearch}> Lọc</button>
             </div>
             <div className="company-profile-container">
                 {/* Thanh điều hướng tab */}

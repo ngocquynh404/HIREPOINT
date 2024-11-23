@@ -99,22 +99,22 @@ const MyCompany = () => {
                     <div className="my-company-content followed-companies">
                         {companies.length > 0 ? (
                             companies.map(company => (
-                                <div key={company._id} className="my-company-item">
+                                <div key={company?._id} className="my-company-item">
                                     <div className='my-company-info-left'>
-                                        <img src={company.logo} alt={company.name} className="my-company-logo" />
+                                        <img src={company?.logo} alt={company?.company_name} className="my-company-logo" />
                                         <div className="my-company-info">
                                             <Link to={`/companies/companydetail/${company._id}`}>
-                                                <h4>{company.name}</h4>
+                                                <h4>{company?.company_name}</h4>
                                             </Link>
                                             <span>
-                                                <FaBuilding /> {company.industry}
+                                                <FaBuilding /> {company?.industry}
                                             </span>
                                             <span>
-                                                <FaUsers /> {company.quymo} Nhân viên | 📄 {company.location}
+                                                <FaUsers /> {company?.quymo} Nhân viên | 📄 {company?.location}
                                             </span>
                                         </div>
                                     </div>
-                                    <button className="my-company-unfollow" onClick={() => handleUnfollow(company._id)} >
+                                    <button className="my-company-unfollow" onClick={() => handleUnfollow(company?._id)} >
                                         <FaTimes /> Huỷ theo dõi
                                     </button>
                                 </div>

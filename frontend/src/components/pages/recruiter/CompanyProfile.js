@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FaBuilding, FaEye, FaUsers, FaTimes } from 'react-icons/fa';
 import '../../../styles/companyprofile.css'
 import { getId } from '../../../libs/isAuth';
+
 import axios from 'axios';
 
 
@@ -184,9 +185,39 @@ const CompanyProfile = () => {
         skills: [],
         cv_files: []
     });
-
+    const handleFileChange = (e) => {
+        setCompanyData({ ...companyData, logo: e.target.files[0] });
+      };
+      const handleUploadToCloudinary = async (file) => {
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        uploadData.append('upload_preset', 'unsigned_upload_preset'); // Đảm bảo rằng preset này đã được thiết lập trong Cloudinary
+      
+        try {
+          const response = await axios.post(
+            `https://api.cloudinary.com/v1_1/dxwoaywlz/image/upload`, 
+            uploadData
+          );
+          console.log('Cloudinary response:', response.data); // In ra toàn bộ dữ liệu trả về từ Cloudinary
+    
+          const logoUrl = response.data.secure_url;  // Lấy URL của logo từ phản hồi
+    
+          if (logoUrl) {
+            console.log('Logo URL:', logoUrl); // In ra URL của logo
+            return logoUrl;
+          } else {
+            console.error('Error: No secure_url found in the response');
+            return null;
+          }
+        } catch (error) {
+          console.error('Error uploading to Cloudinary:', error);
+          return null;
+        }
+      };
+    
     const [followerProfile, setFollowerProfile] = useState([]);
-
+   
+    
     const handleInputCompanyChange = (e) => {
         const { name, value } = e.target;
         setCompanyData({ ...companyData, [name]: value });
@@ -278,13 +309,21 @@ const CompanyProfile = () => {
     };
 
     const handleSave = async () => {
+        const logoUrl = await handleUploadToCloudinary(companyData.logo);
+        console.log('Data before sending to backend:', {
+            ...companyData,
+            logo: logoUrl, // Chắc chắn logo URL sẽ được gửi
+        });
+        const updatedCompanyData = {
+            ...companyData,  // Lấy tất cả dữ liệu cũ
+            logo: logoUrl,   // Cập nhật logo mới
+        };
+        console.log('Logo URL trước khi gửi lên server:', companyData.logo); 
         try {
-            const response = await axios.put(`http://localhost:5000/api/companies/${companyId}`, companyData, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`, // Gửi token xác thực 
-                },
+            const response = await axios.put(`http://localhost:5000/api/companies/${companyId}`,
+                updatedCompanyData,         
+                {    
             });
-
             // Kiểm tra phản hồi từ server
             if (response.data && response.data.message) {
                 // Nếu có message trong response, hiển thị thông báo
@@ -606,7 +645,7 @@ const CompanyProfile = () => {
                                                     type="file"
                                                     accept="image/*"
                                                     className="company-profile-file-input"
-                                                    onChange={handleImageChange}
+                                                    onChange={handleFileChange}
                                                 />
                                             </>
                                         ) : (

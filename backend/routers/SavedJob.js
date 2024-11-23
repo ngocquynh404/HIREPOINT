@@ -22,7 +22,9 @@ router.post('/save-job', authenticateToken, async (req, res) => {
       user_id,
       job_id,
     });
-
+    if (!user_id) {
+      return res.status(401).json({ message: 'Bạn cần đăng nhập để lưu công việc' }); // 'You need to log in to save a job'
+    }
     await savedJob.save();
     res.status(201).json({ message: 'Job saved successfully', savedJob });
   } catch (error) {
